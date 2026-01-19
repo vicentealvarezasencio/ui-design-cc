@@ -3,7 +3,7 @@
 > A service-agnostic UI/UX design specification system for Claude Code.
 > Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.
 
-**Version:** 0.2.0
+**Version:** 0.2.1
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -330,6 +330,20 @@ W3C-format tokens with dark mode support:
 - Keep design intent documented
 - Agents handle complexity, you make decisions
 
+## Git Integration
+
+**Auto-commit with comprehensive messages, auto-push to remote.**
+
+Inspired by GSD's git philosophy:
+- Automatically initializes git repo if none exists
+- Commits after each command completion
+- Uses clear commit messages: `docs(ui): specify SCR-01 Login screen`
+- Stages files individually (never `git add .`)
+- Pushes automatically if remote exists
+- Warns but doesn't block on git errors
+
+See `ui-design/references/git-integration.md` for full protocol.
+
 ## Coexistence with GSD
 
 This system installs to separate namespaces:
@@ -375,6 +389,9 @@ ui-design-cc/
     │   ├── v0.md             # Vercel V0 rules
     │   ├── figma.md          # Figma export rules
     │   └── generic.md        # Tool-agnostic rules
+    ├── references/
+    │   ├── design-systems.md # Design system references
+    │   └── git-integration.md # Git auto-commit protocol
     └── templates/
         ├── README.md         # Template documentation
         ├── ui-spec.md        # Master spec template
@@ -388,6 +405,13 @@ ui-design-cc/
 ```
 
 ## Version History
+
+### 0.2.1 — Git Integration
+
+- **Auto-commit philosophy** — Commits after each command with comprehensive messages
+- **Auto-push** — Pushes to remote if exists
+- **Git init** — Automatically initializes git repo if none exists
+- **Reference documentation** — `ui-design/references/git-integration.md`
 
 ### 0.2.0 — Multi-Agent Architecture
 

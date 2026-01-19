@@ -763,3 +763,70 @@ Ready For: [next step - e.g., "UI Prompter to generate Stitch prompts"]
 ```
 
 </output_summary>
+
+<git_integration>
+
+## Git Protocol
+
+UI Specifier follows the auto-commit philosophy. Reference: `ui-design/references/git-integration.md`
+
+### On Completion
+
+After specification tasks complete, commit all created/modified files:
+
+```bash
+# Check if .planning/ is gitignored
+git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING=false || COMMIT_PLANNING=true
+
+if [ "$COMMIT_PLANNING" = "true" ]; then
+    # Stage files individually (NEVER git add . or git add -A)
+    git add .planning/screens/SCR-01-login.md
+    git add .planning/COMPONENTS.md
+    git add .planning/UI-PATTERNS.md
+    # ... other modified files
+
+    # Commit with comprehensive message
+    git commit -m "docs(ui): specify SCR-01 Login screen
+
+- 10-section format with ASCII wireframe
+- Components: Input (2), Button (2), Link (1)
+- States: default, loading, error, success
+- Responsive: mobile-first with breakpoints
+"
+
+    # Push if remote exists
+    if git remote | grep -q origin; then
+        git push origin $(git branch --show-current)
+    fi
+fi
+```
+
+### Commit Types for Specification
+
+| Output | Commit Type | Example Message |
+|--------|-------------|-----------------|
+| Single screen | `docs(ui)` | `docs(ui): specify SCR-01 Login screen` |
+| Multiple screens | `docs(ui)` | `docs(ui): specify screens SCR-01 through SCR-04` |
+| Component inventory | `docs(ui)` | `docs(ui): define component inventory (12 components)` |
+| Pattern added | `docs(ui)` | `docs(ui): add auth form pattern PAT-01` |
+| Spec update | `docs(ui)` | `docs(ui): update SCR-03 with loading states` |
+
+### Commit Message Details
+
+Include in commit body:
+- Key sections completed
+- Component count and types
+- States defined
+- Notable patterns established
+
+### Error Handling
+
+Git operations should warn but not block specification work:
+
+```bash
+if ! git commit -m "message"; then
+    echo "Warning: Git commit failed. Changes preserved but not committed."
+fi
+```
+
+</git_integration>

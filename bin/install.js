@@ -315,7 +315,27 @@ async function install() {
   }
   console.log();
 
-  // 5. Write version file
+  // 5. Install references
+  const referencesSrc = join(packageRoot, 'ui-design', 'references');
+  const referencesDest = join(configDir, 'ui-design', 'references');
+  const referenceCount = countFiles(referencesSrc);
+
+  log(`${colors.bright}References${colors.reset} (${referenceCount} files)`, 'cyan');
+  if (existsSync(referencesSrc)) {
+    if (!isDryRun) {
+      removeDir(referencesDest);
+    }
+    const copied = copyDir(referencesSrc, referencesDest, { pathReplacements, dryRun: isDryRun });
+    totalCopied += copied;
+    if (!isDryRun) {
+      log(`  ✓ Installed to ui-design/references/`, 'green');
+    } else {
+      log(`  Would install to ui-design/references/`, 'dim');
+    }
+  }
+  console.log();
+
+  // 6. Write version file
   if (!isDryRun) {
     const versionPath = join(configDir, 'ui-design', 'VERSION');
     mkdirSync(dirname(versionPath), { recursive: true });

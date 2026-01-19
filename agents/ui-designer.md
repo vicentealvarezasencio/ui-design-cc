@@ -463,3 +463,108 @@ When creating or updating files, use templates from `ui-design/templates/`:
 4. **Reference templates** when delegating to other agents
 
 </templates>
+
+<git_integration>
+
+## Git Philosophy
+
+UI Design System follows GSD's git philosophy: **auto-commit with comprehensive messages, auto-push to remote.**
+
+Reference: `ui-design/references/git-integration.md`
+
+## On Session Start
+
+```bash
+# Check for git repo
+if [ -d .git ] || [ -f .git ]; then
+    echo "Git repo exists"
+else
+    git init
+    echo "Initialized new git repo"
+fi
+```
+
+## On Command Completion
+
+After any command that modifies files, automatically:
+
+1. **Stage files individually** (never `git add .` or `git add -A`)
+2. **Commit with comprehensive message**
+3. **Push to remote if exists**
+
+## Commit Message Format
+
+```
+{type}(ui): {action} {subject}
+
+- {detail 1}
+- {detail 2}
+- {detail 3}
+```
+
+**Types:**
+- `docs(ui)` — Specifications, screens, patterns, decisions, context
+- `feat(ui)` — Design tokens, new capabilities
+- `fix(ui)` — Drift fixes, corrections, sync updates
+
+## Command → Commit Examples
+
+| Command | Commit Message Pattern |
+|---------|----------------------|
+| `/ui:init` | `docs(ui): initialize UI context for {project}` |
+| `/ui:setup-tokens` | `feat(ui): establish design token system` |
+| `/ui:design-screens` | `docs(ui): specify {SCR-XX} {name} screen` |
+| `/ui:define-components` | `docs(ui): define component inventory` |
+| `/ui:export` | `docs(ui): export {service} prompts for {screens}` |
+| `/ui:realize` | `docs(ui): mark {SCR-XX} as realized` |
+| `/ui:sync` | `fix(ui): sync drift in {affected}` |
+| `/ui:decisions` | `docs(ui): add design decision {DEC-XX}` |
+| `/ui:patterns` | `docs(ui): add UI pattern {PAT-XX}` |
+
+## Git Execution Protocol
+
+```bash
+# 1. Check if .planning/ is gitignored
+git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING=false || COMMIT_PLANNING=true
+
+# 2. If should commit
+if [ "$COMMIT_PLANNING" = "true" ]; then
+    # Stage files individually
+    git add .planning/UI-CONTEXT.md
+    git add .planning/design-tokens.json
+    # ... other modified files
+
+    # Commit with message
+    git commit -m "docs(ui): initialize UI context for MyApp
+
+- Platform: web (React + Next.js)
+- Tokens: colors, typography, spacing defined
+- Inspiration: Linear, Notion
+"
+
+    # Push if remote exists
+    if git remote | grep -q origin; then
+        git push origin $(git branch --show-current)
+    fi
+fi
+```
+
+## Error Handling
+
+Git operations should **warn but not block** UI Design work:
+
+```bash
+if ! git commit -m "message"; then
+    echo "Warning: Git commit failed. Changes preserved but not committed."
+fi
+```
+
+## Coordinator Responsibility
+
+As coordinator, ensure all agents follow git protocol:
+- Provide git context to spawned agents
+- Verify commits after agent completion
+- Handle cross-agent commit coordination
+- Maintain commit history coherence
+
+</git_integration>

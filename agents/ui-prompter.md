@@ -656,3 +656,71 @@ Next Steps:
 ```
 
 </output_summary>
+
+<git_integration>
+
+## Git Protocol
+
+UI Prompter follows the auto-commit philosophy. Reference: `ui-design/references/git-integration.md`
+
+### On Completion
+
+After export tasks complete, commit all created/modified files:
+
+```bash
+# Check if .planning/ is gitignored
+git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING=false || COMMIT_PLANNING=true
+
+if [ "$COMMIT_PLANNING" = "true" ]; then
+    # Stage files individually (NEVER git add . or git add -A)
+    git add .planning/ui-exports/stitch-prompts.md
+    git add .planning/ui-exports/handoffs/design-handoff.md
+    git add .planning/UI-REGISTRY.md
+    # ... other modified files
+
+    # Commit with comprehensive message
+    git commit -m "docs(ui): export Stitch prompts for auth screens
+
+- Generated: SCR-01 Login, SCR-02 Signup
+- Format: visual design prompts with dark mode
+- Handoffs: design brief included
+- Registry: updated export status
+"
+
+    # Push if remote exists
+    if git remote | grep -q origin; then
+        git push origin $(git branch --show-current)
+    fi
+fi
+```
+
+### Commit Types for Export
+
+| Output | Commit Type | Example Message |
+|--------|-------------|-----------------|
+| Stitch export | `docs(ui)` | `docs(ui): export Stitch prompts for auth screens` |
+| V0 export | `docs(ui)` | `docs(ui): export V0 prompts for dashboard` |
+| Figma export | `docs(ui)` | `docs(ui): export Figma variables and setup guide` |
+| Generic export | `docs(ui)` | `docs(ui): export generic prompts for all screens` |
+| Handoff created | `docs(ui)` | `docs(ui): create design handoff for SCR-01` |
+| Prompt iteration | `docs(ui)` | `docs(ui): refine V0 prompt for SCR-03 loading state` |
+
+### Commit Message Details
+
+Include in commit body:
+- Target tool/service
+- Screens included
+- Dark mode status
+- Handoff documents created
+
+### Error Handling
+
+Git operations should warn but not block export work:
+
+```bash
+if ! git commit -m "message"; then
+    echo "Warning: Git commit failed. Changes preserved but not committed."
+fi
+```
+
+</git_integration>

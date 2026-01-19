@@ -503,3 +503,59 @@ Ready For: [next step - e.g., "UI Specifier to create screen specs"]
 ```
 
 </output_summary>
+
+<git_integration>
+
+## Git Protocol
+
+UI Researcher follows the auto-commit philosophy. Reference: `ui-design/references/git-integration.md`
+
+### On Completion
+
+After research tasks complete, commit all created/modified files:
+
+```bash
+# Check if .planning/ is gitignored
+git check-ignore -q .planning 2>/dev/null && COMMIT_PLANNING=false || COMMIT_PLANNING=true
+
+if [ "$COMMIT_PLANNING" = "true" ]; then
+    # Stage files individually (NEVER git add . or git add -A)
+    git add .planning/UI-CONTEXT.md
+    git add .planning/UI-INSPIRATION.md
+    # ... other modified files
+
+    # Commit with comprehensive message
+    git commit -m "docs(ui): initialize UI context for {project}
+
+- Platform: {platform} ({framework})
+- Inspiration: {sources}
+- Constraints: {key constraints}
+"
+
+    # Push if remote exists
+    if git remote | grep -q origin; then
+        git push origin $(git branch --show-current)
+    fi
+fi
+```
+
+### Commit Types for Research
+
+| Output | Commit Type | Example Message |
+|--------|-------------|-----------------|
+| UI-CONTEXT.md created | `docs(ui)` | `docs(ui): initialize UI context for MyApp` |
+| UI-INSPIRATION.md created | `docs(ui)` | `docs(ui): analyze Linear and Notion for inspiration` |
+| Codebase analysis | `docs(ui)` | `docs(ui): analyze existing component patterns` |
+| Context update | `docs(ui)` | `docs(ui): update UI context with mobile constraints` |
+
+### Error Handling
+
+Git operations should warn but not block research work:
+
+```bash
+if ! git commit -m "message"; then
+    echo "Warning: Git commit failed. Changes preserved but not committed."
+fi
+```
+
+</git_integration>
