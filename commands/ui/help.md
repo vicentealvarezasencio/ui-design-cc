@@ -5,7 +5,7 @@ allowed-tools: []
 ---
 
 <objective>
-Display all available UI Design System commands with descriptions and usage examples.
+Display all available UI Design System commands with descriptions, usage examples, and workflow guidance.
 </objective>
 
 <process>
@@ -20,71 +20,189 @@ Display the following help information:
 A service-agnostic UI/UX specification system that works
 alongside GSD (Get Shit Done) or standalone.
 
-WORKFLOW COMMANDS
+Version: 0.2.0
+
+INITIALIZATION
 ─────────────────────────────────────────────────────
 
-  /ui:setup-tokens        Initialize design token system
-                          Define colors, typography, spacing
-                          Creates: design-tokens.json
+  /ui:init              Initialize UI context for project
+                        Discovers platform, framework, inspiration
+                        Creates: UI-CONTEXT.md, state files
 
-  /ui:design-screens      Create screen specifications
-                          Reads REQUIREMENTS.md (if exists)
-                          Creates: UI-SPEC.md, screens/*.md
+  /ui:setup-tokens      Set up design token system
+                        Define colors, typography, spacing
+                        Creates: design-tokens.json
 
-  /ui:define-components   Extract component inventory
-                          Analyzes screen specs
-                          Creates: COMPONENTS.md
-
-EXPORT COMMANDS
+SPECIFICATION
 ─────────────────────────────────────────────────────
 
-  /ui:export [service]    Generate service-specific prompts
-                          Services: stitch, v0, figma, generic
-                          Creates: ui-exports/*.md
+  /ui:design-screens    Create screen specifications
+                        10-section format with wireframes
+                        Creates: UI-SPEC.md, screens/*.md
 
-  /ui:import-tokens       Import design tokens from external
-                          Supports: Figma JSON, W3C format
+  /ui:define-components Extract component inventory
+                        Props, variants, states, accessibility
+                        Creates: COMPONENTS.md
 
-STATUS COMMANDS
+  /ui:patterns          Document reusable UI patterns
+                        Add, view, or auto-extract patterns
+                        Creates: UI-PATTERNS.md
+
+EXPORT
 ─────────────────────────────────────────────────────
 
-  /ui:status              Show specification coverage
-                          Screens defined vs. realized
-                          Component inventory status
+  /ui:export [service]  Generate service-specific prompts
+                        Services: stitch, v0, figma, generic
+                        Creates: ui-exports/*.md
 
-  /ui:help                Show this help message
+                        Examples:
+                        /ui:export stitch
+                        /ui:export v0 SCR-01
+                        /ui:export figma
 
-TYPICAL WORKFLOW
+IMPORT
 ─────────────────────────────────────────────────────
 
-  With GSD:
-    /gsd:new-project      → Define requirements
-    /ui:setup-tokens      → Establish design system
-    /ui:design-screens    → Create screen specs
-    /ui:export stitch     → Generate prompts
-    [use external tool]   → Create visuals
-    /gsd:plan-phase       → Continue with implementation
+  /ui:import-tokens     Import tokens from external sources
+                        Supports: Figma, Tailwind, W3C, etc.
+                        Updates: design-tokens.json
 
-  Standalone:
-    /ui:setup-tokens      → Start with design tokens
-    /ui:design-screens    → Define screens manually
-    /ui:define-components → Extract components
-    /ui:export v0         → Generate V0 prompts
+  /ui:import-design     Import design from external tools
+                        Reverse sync, drift detection
+                        Updates: screen specs, patterns
+
+TRACKING
+─────────────────────────────────────────────────────
+
+  /ui:realize [screen]  Mark screens as realized
+                        Track implementation status
+                        Updates: UI-REGISTRY.md
+
+                        Examples:
+                        /ui:realize SCR-01
+                        /ui:realize SCR-01,SCR-02
+
+  /ui:sync              Detect and fix drift
+                        Token, component, export consistency
+                        Auto-fix or generate recommendations
+
+STATUS & INFO
+─────────────────────────────────────────────────────
+
+  /ui:status            Show specification coverage
+                        Screens, components, exports, progress
+
+  /ui:decisions         View design decision log
+                        Add, view, filter decisions
+
+                        Examples:
+                        /ui:decisions
+                        /ui:decisions add
+                        /ui:decisions DEC-005
+
+  /ui:whats-new         Show version history and changes
+
+  /ui:help              Show this help message
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TYPICAL WORKFLOWS
+─────────────────────────────────────────────────────
+
+## Starting Fresh
+
+  1. /ui:init               Set up context
+  2. /ui:setup-tokens       Define design system
+  3. /ui:design-screens     Specify all screens
+  4. /ui:define-components  Extract components
+  5. /ui:export stitch      Generate prompts
+  6. [Use external tool]    Create designs
+  7. /ui:realize            Track completion
+
+## With GSD Integration
+
+  /gsd:new-project          Define requirements
+  /ui:init                  Set up UI context
+  /ui:setup-tokens          Define tokens
+  /ui:design-screens        Specs from requirements
+  /ui:export v0             Generate code prompts
+  /gsd:execute-phase        Implement
+
+## Quick Export Flow
+
+  /ui:export stitch         Export to Stitch
+  [Generate in Stitch]
+  /ui:import-design         Capture changes
+  /ui:realize SCR-01        Mark as done
+
+## Maintenance
+
+  /ui:sync                  Check for drift
+  /ui:decisions add         Document choice
+  /ui:patterns extract      Find new patterns
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ARTIFACTS CREATED
 ─────────────────────────────────────────────────────
 
   .planning/
-  ├── UI-SPEC.md            Master UI specification
-  ├── COMPONENTS.md         Component inventory
-  ├── design-tokens.json    Design token definitions
+  ├── UI-CONTEXT.md           Platform and constraints
+  ├── UI-SPEC.md              Master specification
+  ├── UI-DECISIONS.md         Decision log
+  ├── UI-PATTERNS.md          Pattern library
+  ├── UI-REGISTRY.md          Realization tracking
+  ├── COMPONENTS.md           Component inventory
+  ├── design-tokens.json      Design tokens (W3C)
   ├── screens/
-  │   ├── SCR-01-*.md       Individual screen specs
+  │   ├── SCR-01-login.md     Individual screen specs
+  │   ├── SCR-02-signup.md
   │   └── ...
-  └── ui-exports/
-      ├── stitch-prompts.md
-      ├── v0-prompts.md
-      └── figma-tokens.json
+  ├── ui-exports/
+  │   ├── stitch-prompts.md   Stitch-optimized prompts
+  │   ├── v0-prompts.md       V0-optimized prompts
+  │   ├── figma-tokens.json   Figma Variables export
+  │   ├── generic-prompts.md  Tool-agnostic prompts
+  │   └── handoffs/           Design handoff docs
+  └── ui-state/
+      └── coordinator-state.json
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+SUPPORTED SERVICES
+─────────────────────────────────────────────────────
+
+  Stitch      Visual design generation (Google)
+              Best for: High-fidelity mockups
+
+  V0          React component generation (Vercel)
+              Best for: Code implementation
+
+  Figma       Design tool integration
+              Best for: Designer handoff
+
+  Generic     Tool-agnostic prompts
+              Best for: Any AI design tool
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+MULTI-AGENT SYSTEM
+─────────────────────────────────────────────────────
+
+The system uses specialized agents:
+
+  UI Designer     Coordinator, routes tasks
+  UI Researcher   Context, inspiration, analysis
+  UI Specifier    Screens, components, patterns
+  UI Prompter     Exports, prompts, handoffs
+
+Agents are spawned automatically based on task complexity.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+More Info:
+  /ui:whats-new             Version history
+  ~/.claude/ui-design/      Full documentation
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

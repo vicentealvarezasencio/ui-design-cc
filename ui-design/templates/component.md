@@ -2,167 +2,328 @@
 
 Template for component specifications in `.planning/COMPONENTS.md`.
 
+---
+
 <template>
 
 ```markdown
-## [ComponentName]
+---
+
+## CMP-[XX]: [ComponentName]
 
 **Category:** [Primitive | Form | Layout | Navigation | Feedback | Data | Composite]
-**Used in:** SCR-01, SCR-02, SCR-04
+**Priority:** [Core | Standard | Optional]
+**Library Match:** [shadcn/ui Component | MUI Component | Custom]
+
+### Description
+
+[One sentence describing the component's purpose and primary use case.]
+
+### Usage
+
+| Screen | Context |
+|--------|---------|
+| SCR-01 | Login submit button |
+| SCR-02 | Signup submit button |
+| SCR-04 | Dashboard action buttons |
 
 ### Variants
 
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Variants                                                    │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │   Primary   │  │  Secondary  │  │    Ghost    │         │
+│  │  (#2563EB)  │  │  (outlined) │  │   (text)    │         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+│                                                              │
+│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐         │
+│  │ Destructive │  │   Outline   │  │    Link     │         │
+│  │  (#EF4444)  │  │  (border)   │  │ (underline) │         │
+│  └─────────────┘  └─────────────┘  └─────────────┘         │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
 | Variant | Description | Use Case |
 |---------|-------------|----------|
-| primary | Bold, filled background | Main actions |
-| secondary | Subtle, outlined | Secondary actions |
-| ghost | Minimal, text only | Tertiary actions |
-| destructive | Red, warning style | Delete, remove |
+| primary | Solid background, high contrast | Main actions, CTAs |
+| secondary | Subtle background, lower contrast | Secondary actions |
+| ghost | No background, text only | Tertiary actions, menus |
+| destructive | Red/danger styling | Delete, remove actions |
+| outline | Border only, no fill | Alternative secondary |
+| link | Underlined text style | Inline links |
 
 ### Sizes
 
-| Size | Height | Padding | Font Size |
-|------|--------|---------|-----------|
-| sm | 32px | spacing.2 spacing.3 | typography.sm |
-| md | 40px | spacing.2 spacing.4 | typography.base |
-| lg | 48px | spacing.3 spacing.6 | typography.lg |
+```
+┌──────────────────────────────────────────────────────────────┐
+│  Sizes                                                       │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ┌───────┐      ┌───────────┐      ┌─────────────────┐      │
+│  │  xs   │      │    sm     │      │       md        │      │
+│  │ 24px  │      │   32px    │      │      40px       │      │
+│  └───────┘      └───────────┘      └─────────────────┘      │
+│                                                              │
+│  ┌─────────────────────┐      ┌───────────────────────────┐ │
+│  │         lg          │      │            xl             │ │
+│  │        48px         │      │           56px            │ │
+│  └─────────────────────┘      └───────────────────────────┘ │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
+```
+
+| Size | Height | Padding | Font Size | Icon Size |
+|------|--------|---------|-----------|-----------|
+| xs | 24px | spacing.1 spacing.2 | typography.xs | 12px |
+| sm | 32px | spacing.1.5 spacing.3 | typography.sm | 14px |
+| md | 40px | spacing.2 spacing.4 | typography.sm | 16px |
+| lg | 48px | spacing.2.5 spacing.5 | typography.base | 18px |
+| xl | 56px | spacing.3 spacing.6 | typography.lg | 20px |
 
 ### Props
 
 | Prop | Type | Default | Required | Description |
 |------|------|---------|----------|-------------|
 | children | ReactNode | - | Yes | Button content |
-| variant | enum | "primary" | No | Visual style variant |
-| size | enum | "md" | No | Size preset |
-| disabled | boolean | false | No | Disables interaction |
+| variant | "primary" \| "secondary" \| "ghost" \| "destructive" \| "outline" \| "link" | "primary" | No | Visual style |
+| size | "xs" \| "sm" \| "md" \| "lg" \| "xl" | "md" | No | Size preset |
+| disabled | boolean | false | No | Prevents interaction |
 | loading | boolean | false | No | Shows loading spinner |
-| icon | string | null | No | Icon name (left position) |
-| iconPosition | enum | "left" | No | Icon placement |
+| icon | ReactNode | undefined | No | Leading icon element |
+| iconPosition | "left" \| "right" | "left" | No | Icon placement |
 | fullWidth | boolean | false | No | Expands to container width |
-| type | enum | "button" | No | HTML button type |
-| onClick | function | - | No | Click handler |
+| type | "button" \| "submit" \| "reset" | "button" | No | HTML button type |
+| asChild | boolean | false | No | Render as child element (Radix) |
+| onClick | () => void | undefined | No | Click handler |
+| className | string | undefined | No | Additional CSS classes |
 
 ### States
 
-| State | Visual Change | Trigger |
-|-------|---------------|---------|
-| default | Base appearance | Initial |
-| hover | Slightly darker bg | Mouse enter |
-| active | Darker bg, slight scale | Mouse down |
-| focus | Focus ring | Tab navigation |
-| disabled | Muted colors, no pointer | disabled=true |
-| loading | Spinner, disabled | loading=true |
-
-### Design Token References
-
 ```
-Background:     color.primary.default
-Background hover: color.primary.hover
-Text:           color.primary.foreground
-Border radius:  border.radius.md
-Font weight:    typography.weight.medium
-Transition:     transition.colors
-Shadow (hover): shadow.sm
+┌──────────────────────────────────────────────────────────────┐
+│  States                                                      │
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  Default    Hover      Active     Focus      Disabled        │
+│  ┌─────┐   ┌─────┐   ┌─────┐   ┌─────┐   ┌ ─ ─ ─┐          │
+│  │     │   │░░░░░│   │▓▓▓▓▓│   │○────│   │      │          │
+│  │     │   │░░░░░│   │▓▓▓▓▓│   │○────│   │      │          │
+│  └─────┘   └─────┘   └─────┘   └─────┘   └ ─ ─ ─┘          │
+│                                                              │
+│  Loading                                                     │
+│  ┌─────────┐                                                │
+│  │ ◠ Loading│                                                │
+│  └─────────┘                                                │
+│                                                              │
+└──────────────────────────────────────────────────────────────┘
 ```
+
+| State | Visual Change | Trigger | Token Reference |
+|-------|---------------|---------|-----------------|
+| default | Base appearance | Initial | color.primary.default |
+| hover | Slightly darker | Mouse enter | color.primary.hover |
+| active | Darker, slight scale | Mouse down | color.primary.active |
+| focus | Ring outline | Tab/click | border.focus + ring |
+| disabled | Muted, no pointer | disabled=true | opacity.disabled |
+| loading | Spinner, disabled | loading=true | - |
 
 ### Accessibility
 
-- Must be keyboard navigable (Tab to focus, Enter/Space to activate)
-- Requires visible focus indicator
-- Disabled state must be conveyed (aria-disabled)
-- Loading state should announce to screen readers
-- If icon-only, must have aria-label
+**Keyboard Navigation:**
+- [ ] Tab: Moves focus to/from button
+- [ ] Enter/Space: Activates button
+- [ ] Focus visible: 2px ring outline
+
+**ARIA:**
+- [ ] `aria-disabled="true"` when disabled (not just `disabled` attr)
+- [ ] `aria-busy="true"` when loading
+- [ ] `aria-label` required if icon-only
+- [ ] `role="button"` if using `asChild` with non-button element
+
+**Screen Reader:**
+- [ ] Loading state announced
+- [ ] Disabled state conveyed
+- [ ] Button purpose clear from content
+
+### Token References
+
+| Property | Light Mode | Dark Mode |
+|----------|------------|-----------|
+| Background | color.primary.default | color.primary.default |
+| Background (hover) | color.primary.hover | color.primary.hover |
+| Text | color.primary.foreground | color.primary.foreground |
+| Border radius | border.radius.md | border.radius.md |
+| Padding H | spacing.4 | spacing.4 |
+| Padding V | spacing.2 | spacing.2 |
+| Font size | typography.fontSize.sm | typography.fontSize.sm |
+| Font weight | typography.fontWeight.medium | typography.fontWeight.medium |
+| Transition | transition.duration.150 | transition.duration.150 |
+| Focus ring | border.focus (2px) | border.focus (2px) |
+
+### Code Hint
+
+```typescript
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'ghost' | 'destructive' | 'outline' | 'link';
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  loading?: boolean;
+  icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
+  fullWidth?: boolean;
+  asChild?: boolean;
+}
+```
 
 ### Usage Examples
 
 **Basic:**
 ```jsx
 <Button>Click me</Button>
-```
-
-**With variants:**
-```jsx
-<Button variant="primary">Save</Button>
 <Button variant="secondary">Cancel</Button>
 <Button variant="ghost">Learn more</Button>
-<Button variant="destructive">Delete</Button>
 ```
 
-**With states:**
+**With icon:**
+```jsx
+<Button icon={<PlusIcon />}>Add item</Button>
+<Button icon={<ArrowRightIcon />} iconPosition="right">Next</Button>
+```
+
+**States:**
 ```jsx
 <Button loading>Saving...</Button>
 <Button disabled>Unavailable</Button>
 ```
 
-**With icon:**
+**Full width:**
 ```jsx
-<Button icon="plus">Add item</Button>
-<Button icon="arrow-right" iconPosition="right">Next</Button>
+<Button fullWidth size="lg">Sign in</Button>
 ```
 
 ### Do's and Don'ts
 
 **Do:**
-- Use primary for the main action on a page
-- Keep button text short and action-oriented
-- Use loading state for async actions
+- ✓ Use `primary` for the main action per section
+- ✓ Keep button text short and action-oriented
+- ✓ Use loading state for async operations
+- ✓ Provide aria-label for icon-only buttons
+- ✓ Use consistent sizing within a context
 
 **Don't:**
-- Don't use more than one primary button per section
-- Don't use destructive variant for non-destructive actions
-- Don't disable without explaining why (use tooltip)
+- ✗ Don't use multiple `primary` buttons in same section
+- ✗ Don't use `destructive` for non-destructive actions
+- ✗ Don't disable without explaining why
+- ✗ Don't use buttons for navigation (use links)
+- ✗ Don't make buttons too small for touch (min 44px)
+
+---
 ```
 
 </template>
 
+---
+
 <categories>
 
-**Primitives:**
+## Component Categories
+
+### Primitives
 Basic building blocks used across the app.
-- Button, Link, Icon, Badge, Avatar, Tooltip
+- **Button** — Click trigger for actions
+- **Link** — Navigation element
+- **Icon** — Visual symbols
+- **Badge** — Status/count indicators
+- **Avatar** — User/entity representation
+- **Separator** — Visual divider
 
-**Form Elements:**
+### Form Elements
 Input and selection components.
-- InputField, TextArea, Select, Checkbox, Radio, Switch, Slider, DatePicker, FileUpload
+- **Input** — Text input field
+- **TextArea** — Multi-line text input
+- **Select** — Dropdown selection
+- **Checkbox** — Boolean selection
+- **Radio** — Single selection from group
+- **Switch** — Toggle on/off
+- **Slider** — Range selection
+- **DatePicker** — Date selection
+- **FileUpload** — File input
 
-**Layout:**
+### Layout
 Structural and spacing components.
-- Card, Container, Divider, Stack, Grid, Spacer
+- **Card** — Content container
+- **Container** — Max-width wrapper
+- **Divider** — Section separator
+- **Stack** — Vertical/horizontal spacing
+- **Grid** — Grid layout
+- **AspectRatio** — Aspect ratio container
 
-**Navigation:**
+### Navigation
 Wayfinding components.
-- Navbar, Sidebar, Tabs, Breadcrumb, Pagination, Menu, Dropdown
+- **Navbar** — Main navigation
+- **Sidebar** — Side navigation
+- **Tabs** — Tabbed content
+- **Breadcrumb** — Location indicator
+- **Pagination** — Page navigation
+- **Menu** — Action menu
+- **DropdownMenu** — Dropdown actions
 
-**Feedback:**
+### Feedback
 User feedback and notifications.
-- Alert, Toast, Modal, Dialog, Progress, Skeleton, Spinner
+- **Alert** — Inline message
+- **Toast** — Temporary notification
+- **Dialog** — Modal dialog
+- **Modal** — Overlay modal
+- **Progress** — Progress indicator
+- **Skeleton** — Loading placeholder
+- **Spinner** — Loading indicator
 
-**Data Display:**
+### Data Display
 Showing data and content.
-- Table, List, DataCard, Stat, Chart, Avatar, Badge
+- **Table** — Tabular data
+- **DataTable** — Interactive table
+- **List** — List of items
+- **Tree** — Hierarchical data
+- **Stat** — Statistics display
+- **Chart** — Data visualization
 
-**Composite:**
-App-specific combinations of primitives.
-- LoginForm, SearchBar, UserCard, FeatureCard, PricingCard
+### Composite
+App-specific combinations.
+- **LoginForm** — Complete login
+- **SearchBar** — Search interface
+- **UserCard** — User display
+- **FeatureCard** — Feature highlight
 
 </categories>
 
+---
+
 <spec_depth>
 
-**Minimal** (for simple primitives):
-- Props table
-- Basic usage
+## Specification Depth
 
-**Standard** (for most components):
-- Variants, sizes, props
-- States
+### Minimal (Simple primitives)
+- Props table
+- Basic usage example
+- Token references
+
+### Standard (Most components)
+- Variants visualization (ASCII)
+- Sizes visualization (ASCII)
+- Props table
+- States table
 - Token references
 - Usage examples
 
-**Comprehensive** (for complex components):
+### Comprehensive (Complex components)
 - All of standard
-- Accessibility details
+- Accessibility checklist
+- Keyboard navigation
 - Do's and don'ts
 - Edge cases
+- Code hints
 
 </spec_depth>

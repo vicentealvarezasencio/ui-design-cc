@@ -1,48 +1,104 @@
 #!/usr/bin/env node
 
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const readline = require('readline');
+/**
+ * UI Design System for Claude Code - Installer
+ *
+ * Installs commands, agents, adapters, and templates to ~/.claude/ (global)
+ * or ./.claude/ (local) for use with Claude Code.
+ *
+ * Usage:
+ *   npx ui-design-cc          # Global install (recommended)
+ *   npx ui-design-cc --local  # Local install (project-specific)
+ *   npx ui-design-cc --dry-run # Preview without installing
+ */
 
-const VERSION = require('../package.json').version;
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync, rmSync, statSync } from 'fs';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+import { homedir } from 'os';
+import { createInterface } from 'readline';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const packageRoot = dirname(__dirname);
 
 // Parse arguments
 const args = process.argv.slice(2);
 const isLocal = args.includes('--local');
 const isGlobal = args.includes('--global');
-const showHelp = args.includes('--help') || args.includes('-h');
+const isDryRun = args.includes('--dry-run');
+const isHelp = args.includes('--help') || args.includes('-h');
 
-if (showHelp) {
+// Version from package.json
+const packageJson = JSON.parse(readFileSync(join(packageRoot, 'package.json'), 'utf-8'));
+const VERSION = packageJson.version;
+
+// Colors for terminal output
+const colors = {
+  reset: '\x1b[0m',
+  bright: '\x1b[1m',
+  dim: '\x1b[2m',
+  green: '\x1b[32m',
+  yellow: '\x1b[33m',
+  blue: '\x1b[34m',
+  cyan: '\x1b[36m',
+  red: '\x1b[31m'
+};
+
+function log(message, color = 'reset') {
+  console.log(`${colors[color]}${message}${colors.reset}`);
+}
+
+function showBanner() {
   console.log(`
-UI Design System for Claude Code - Installer v${VERSION}
-
-Usage: npx ui-design-cc [options]
-
-Options:
-  --global        Install to ~/.claude/ (default if non-interactive)
-  --local         Install to ./.claude/ in current directory
-  --help, -h      Show this help message
-
-Examples:
-  npx ui-design-cc              Interactive installation
-  npx ui-design-cc --global     Install globally for all projects
-  npx ui-design-cc --local      Install for current project only
+${colors.cyan}┌─────────────────────────────────────────────────────────────────┐
+│                                                                 │
+│   ${colors.bright}UI Design System for Claude Code${colors.reset}${colors.cyan}                            │
+│   ${colors.dim}v${VERSION}${colors.reset}${colors.cyan}                                                         │
+│                                                                 │
+│   Specifications  ──────►  Adapters  ──────►  Design Tools     │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘${colors.reset}
 `);
-  process.exit(0);
+}
+
+function showHelp() {
+  showBanner();
+  console.log(`${colors.bright}Usage:${colors.reset}
+  npx ui-design-cc [options]
+
+${colors.bright}Options:${colors.reset}
+  --global      Install to ~/.claude/ (default)
+  --local       Install to ./.claude/ (project-specific)
+  --dry-run     Preview installation without making changes
+  --help, -h    Show this help message
+
+${colors.bright}What gets installed:${colors.reset}
+  commands/ui/    14 slash commands (/ui:init, /ui:export, etc.)
+  agents/         4 specialized agents (designer, researcher, specifier, prompter)
+  ui-design/      Adapters and templates
+
+${colors.bright}Default location:${colors.reset}
+  ~/.claude/      Global installation (works across all projects)
+
+${colors.bright}After installation:${colors.reset}
+  1. Open Claude Code in any project
+  2. Run /ui:init to get started
+  3. Run /ui:help for command reference
+`);
 }
 
 // Determine install location
 async function getInstallDir() {
   if (isLocal) {
-    return path.join(process.cwd(), '.claude');
+    return join(process.cwd(), '.claude');
   }
   if (isGlobal) {
-    return path.join(os.homedir(), '.claude');
+    return join(homedir(), '.claude');
   }
 
-  // Interactive mode
-  const rl = readline.createInterface({
+  // Interactive mode - ask user
+  const rl = createInterface({
     input: process.stdin,
     output: process.stdout
   });
@@ -55,141 +111,242 @@ async function getInstallDir() {
     rl.question('Select [1/2] (default: 1): ', (answer) => {
       rl.close();
       if (answer === '2') {
-        resolve(path.join(process.cwd(), '.claude'));
+        resolve(join(process.cwd(), '.claude'));
       } else {
-        resolve(path.join(os.homedir(), '.claude'));
+        resolve(join(homedir(), '.claude'));
       }
     });
   });
 }
 
-// Copy directory recursively
-function copyDir(src, dest, options = {}) {
-  const { pathReplacements = {} } = options;
+function countFiles(dir) {
+  let count = 0;
+  if (!existsSync(dir)) return 0;
 
-  fs.mkdirSync(dest, { recursive: true });
-  const entries = fs.readdirSync(src, { withFileTypes: true });
-
-  for (const entry of entries) {
-    const srcPath = path.join(src, entry.name);
-    const destPath = path.join(dest, entry.name);
-
-    if (entry.isDirectory()) {
-      copyDir(srcPath, destPath, options);
+  const items = readdirSync(dir);
+  for (const item of items) {
+    const fullPath = join(dir, item);
+    const stat = statSync(fullPath);
+    if (stat.isDirectory()) {
+      count += countFiles(fullPath);
     } else {
-      let content = fs.readFileSync(srcPath, 'utf8');
-
-      // Apply path replacements for .md files
-      if (entry.name.endsWith('.md')) {
-        for (const [search, replace] of Object.entries(pathReplacements)) {
-          content = content.replace(new RegExp(search, 'g'), replace);
-        }
-      }
-
-      fs.writeFileSync(destPath, content);
+      count++;
     }
   }
+  return count;
+}
+
+// Copy directory recursively with path replacements
+function copyDir(src, dest, options = {}) {
+  const { pathReplacements = {}, dryRun = false } = options;
+
+  if (!existsSync(src)) {
+    return 0;
+  }
+
+  if (!dryRun) {
+    mkdirSync(dest, { recursive: true });
+  }
+
+  let copied = 0;
+  const entries = readdirSync(src, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const srcPath = join(src, entry.name);
+    const destPath = join(dest, entry.name);
+
+    if (entry.isDirectory()) {
+      copied += copyDir(srcPath, destPath, options);
+    } else {
+      if (!dryRun) {
+        let content = readFileSync(srcPath, 'utf8');
+
+        // Apply path replacements for .md files
+        if (entry.name.endsWith('.md')) {
+          for (const [search, replace] of Object.entries(pathReplacements)) {
+            content = content.replace(new RegExp(search, 'g'), replace);
+          }
+        }
+
+        writeFileSync(destPath, content);
+      }
+      copied++;
+    }
+  }
+
+  return copied;
 }
 
 // Remove directory if it exists
 function removeDir(dir) {
-  if (fs.existsSync(dir)) {
-    fs.rmSync(dir, { recursive: true, force: true });
+  if (existsSync(dir)) {
+    rmSync(dir, { recursive: true, force: true });
   }
 }
 
 // Main installation
 async function install() {
-  console.log(`
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
- UI Design System for Claude Code - v${VERSION}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`);
+  showBanner();
 
   const configDir = await getInstallDir();
   const isLocalInstall = configDir.includes(process.cwd());
   const pathPrefix = isLocalInstall ? './.claude' : '~/.claude';
+  const installType = isLocalInstall ? 'local (./.claude/)' : 'global (~/.claude/)';
 
-  console.log(`\nInstalling to: ${configDir}\n`);
-
-  const packageDir = path.join(__dirname, '..');
+  if (isDryRun) {
+    log(`Dry run - previewing ${installType} installation\n`, 'yellow');
+  } else {
+    log(`Installing to: ${configDir}\n`, 'blue');
+  }
 
   const pathReplacements = {
     '~/.claude': pathPrefix
   };
 
   // Ensure base directory exists
-  fs.mkdirSync(configDir, { recursive: true });
+  if (!isDryRun) {
+    mkdirSync(configDir, { recursive: true });
+  }
+
+  let totalCopied = 0;
 
   // 1. Install commands (clean install)
-  const commandsSrc = path.join(packageDir, 'commands', 'ui');
-  const commandsDest = path.join(configDir, 'commands', 'ui');
+  const commandsSrc = join(packageRoot, 'commands', 'ui');
+  const commandsDest = join(configDir, 'commands', 'ui');
+  const commandCount = countFiles(commandsSrc);
 
-  if (fs.existsSync(commandsSrc)) {
-    removeDir(commandsDest);
-    copyDir(commandsSrc, commandsDest, { pathReplacements });
-    console.log('  ✓ Commands installed (commands/ui/)');
+  log(`${colors.bright}Commands${colors.reset} (${commandCount} files)`, 'cyan');
+  if (existsSync(commandsSrc)) {
+    if (!isDryRun) {
+      removeDir(commandsDest);
+    }
+    const copied = copyDir(commandsSrc, commandsDest, { pathReplacements, dryRun: isDryRun });
+    totalCopied += copied;
+    if (!isDryRun) {
+      log(`  ✓ Installed to commands/ui/`, 'green');
+    } else {
+      log(`  Would install to commands/ui/`, 'dim');
+    }
   }
+  console.log();
 
   // 2. Install agents (only ui-* prefixed, preserve others)
-  const agentsSrc = path.join(packageDir, 'agents');
-  const agentsDest = path.join(configDir, 'agents');
+  const agentsSrc = join(packageRoot, 'agents');
+  const agentsDest = join(configDir, 'agents');
 
-  fs.mkdirSync(agentsDest, { recursive: true });
+  // Count only ui-* agents
+  let agentCount = 0;
+  if (existsSync(agentsSrc)) {
+    for (const file of readdirSync(agentsSrc)) {
+      if (file.startsWith('ui-')) agentCount++;
+    }
+  }
 
-  if (fs.existsSync(agentsSrc)) {
-    // Remove existing ui-* agents
-    if (fs.existsSync(agentsDest)) {
-      for (const file of fs.readdirSync(agentsDest)) {
+  log(`${colors.bright}Agents${colors.reset} (${agentCount} files)`, 'cyan');
+  if (existsSync(agentsSrc)) {
+    if (!isDryRun) {
+      mkdirSync(agentsDest, { recursive: true });
+
+      // Remove existing ui-* agents
+      if (existsSync(agentsDest)) {
+        for (const file of readdirSync(agentsDest)) {
+          if (file.startsWith('ui-')) {
+            rmSync(join(agentsDest, file));
+          }
+        }
+      }
+
+      // Copy new ui-* agents
+      for (const file of readdirSync(agentsSrc)) {
         if (file.startsWith('ui-')) {
-          fs.unlinkSync(path.join(agentsDest, file));
+          let content = readFileSync(join(agentsSrc, file), 'utf8');
+          for (const [search, replace] of Object.entries(pathReplacements)) {
+            content = content.replace(new RegExp(search, 'g'), replace);
+          }
+          writeFileSync(join(agentsDest, file), content);
+          totalCopied++;
         }
       }
+      log(`  ✓ Installed to agents/ui-*`, 'green');
+    } else {
+      totalCopied += agentCount;
+      log(`  Would install to agents/ui-*`, 'dim');
     }
+  }
+  console.log();
 
-    // Copy new ui-* agents
-    for (const file of fs.readdirSync(agentsSrc)) {
-      if (file.startsWith('ui-')) {
-        let content = fs.readFileSync(path.join(agentsSrc, file), 'utf8');
-        for (const [search, replace] of Object.entries(pathReplacements)) {
-          content = content.replace(new RegExp(search, 'g'), replace);
-        }
-        fs.writeFileSync(path.join(agentsDest, file), content);
-      }
+  // 3. Install adapters
+  const adaptersSrc = join(packageRoot, 'ui-design', 'adapters');
+  const adaptersDest = join(configDir, 'ui-design', 'adapters');
+  const adapterCount = countFiles(adaptersSrc);
+
+  log(`${colors.bright}Adapters${colors.reset} (${adapterCount} files)`, 'cyan');
+  if (existsSync(adaptersSrc)) {
+    if (!isDryRun) {
+      removeDir(adaptersDest);
     }
-    console.log('  ✓ Agents installed (agents/ui-*)');
+    const copied = copyDir(adaptersSrc, adaptersDest, { pathReplacements, dryRun: isDryRun });
+    totalCopied += copied;
+    if (!isDryRun) {
+      log(`  ✓ Installed to ui-design/adapters/`, 'green');
+    } else {
+      log(`  Would install to ui-design/adapters/`, 'dim');
+    }
+  }
+  console.log();
+
+  // 4. Install templates
+  const templatesSrc = join(packageRoot, 'ui-design', 'templates');
+  const templatesDest = join(configDir, 'ui-design', 'templates');
+  const templateCount = countFiles(templatesSrc);
+
+  log(`${colors.bright}Templates${colors.reset} (${templateCount} files)`, 'cyan');
+  if (existsSync(templatesSrc)) {
+    if (!isDryRun) {
+      removeDir(templatesDest);
+    }
+    const copied = copyDir(templatesSrc, templatesDest, { pathReplacements, dryRun: isDryRun });
+    totalCopied += copied;
+    if (!isDryRun) {
+      log(`  ✓ Installed to ui-design/templates/`, 'green');
+    } else {
+      log(`  Would install to ui-design/templates/`, 'dim');
+    }
+  }
+  console.log();
+
+  // 5. Write version file
+  if (!isDryRun) {
+    const versionPath = join(configDir, 'ui-design', 'VERSION');
+    mkdirSync(dirname(versionPath), { recursive: true });
+    writeFileSync(versionPath, VERSION);
+    log(`Version file written (${VERSION})`, 'green');
   }
 
-  // 3. Install core system (clean install)
-  const coreSrc = path.join(packageDir, 'ui-design');
-  const coreDest = path.join(configDir, 'ui-design');
+  // Summary
+  console.log(colors.bright + '─'.repeat(50) + colors.reset);
 
-  if (fs.existsSync(coreSrc)) {
-    removeDir(coreDest);
-    copyDir(coreSrc, coreDest, { pathReplacements });
-    console.log('  ✓ Core system installed (ui-design/)');
+  if (isDryRun) {
+    log(`\nDry run complete. Would install ${totalCopied} files.`, 'yellow');
+    log(`\nRun without --dry-run to install.`, 'dim');
+  } else {
+    log(`\n✓ Installation complete! (${totalCopied} files)`, 'green');
+    log(`\nNext steps:`, 'bright');
+    log(`  1. Open Claude Code in your project`, 'dim');
+    log(`  2. Run ${colors.cyan}/ui:init${colors.reset}${colors.dim} to get started`);
+    log(`  3. Run ${colors.cyan}/ui:help${colors.reset}${colors.dim} for all commands`);
+    log(`\nWorks alongside GSD - run after /gsd:new-project`, 'dim');
   }
 
-  // 4. Write version file
-  fs.writeFileSync(path.join(coreDest, 'VERSION'), VERSION);
-  console.log(`  ✓ Version file written (${VERSION})`);
-
-  console.log(`
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-✅ UI Design System installed successfully!
-
-Get started:
-  /ui:help              Show available commands
-  /ui:setup-tokens      Initialize design system
-  /ui:design-screens    Create screen specs from requirements
-
-Works alongside GSD - run after /gsd:new-project
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-`);
+  console.log();
 }
 
-install().catch((err) => {
-  console.error('Installation failed:', err.message);
-  process.exit(1);
-});
+// Main
+if (isHelp) {
+  showHelp();
+} else {
+  install().catch((err) => {
+    console.error('Installation failed:', err.message);
+    process.exit(1);
+  });
+}

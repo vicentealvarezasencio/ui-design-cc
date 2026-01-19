@@ -1,24 +1,48 @@
 {
   "name": "ui-design-cc",
-  "version": "0.1.0",
-  "description": "Service-agnostic UI/UX design specification system for Claude Code. Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any tool.",
+  "version": "0.2.0",
+  "description": "A service-agnostic UI/UX design specification system for Claude Code. Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.",
+  "type": "module",
   "bin": {
-    "ui-design-cc": "bin/install.js"
+    "ui-design-cc": "./bin/install.js"
+  },
+  "files": [
+    "bin/",
+    "commands/",
+    "agents/",
+    "ui-design/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node bin/install.js --dry-run",
+    "lint": "echo 'No linting configured'",
+    "prepublishOnly": "node bin/validate.js"
   },
   "keywords": [
+    "claude",
     "claude-code",
+    "anthropic",
     "ui",
     "ux",
     "design",
+    "design-system",
+    "design-tokens",
     "wireframe",
     "mockup",
-    "figma",
+    "specification",
+    "components",
     "stitch",
     "v0",
-    "design-tokens",
-    "ai"
+    "figma",
+    "shadcn",
+    "tailwind",
+    "react",
+    "ai",
+    "gsd",
+    "get-shit-done"
   ],
-  "author": "",
+  "author": "Vicente Alvarez Asencio",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,6 +53,12 @@
   },
   "homepage": "https://github.com/vicentealvarezasencio/ui-design-cc#readme",
   "engines": {
-    "node": ">=16.0.0"
-  }
+    "node": ">=18.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "preferGlobal": true
 }
