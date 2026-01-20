@@ -3,7 +3,7 @@
 > A service-agnostic UI/UX design specification system for Claude Code.
 > Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.
 
-**Version:** 0.2.1
+**Version:** 0.2.2
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -363,6 +363,101 @@ UI Design:     commands/ui/*, agents/ui-*, ui-design/
 
 Both can be installed and used together. GSD updates won't affect UI Design files.
 
+### UI Commands in the GSD Cycle
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                           GSD + UI INTEGRATION                              │
+├─────────────────────────────────────────────────────────────────────────────┤
+│                                                                             │
+│  /gsd:new-project ─────────────► PROJECT.md with requirements               │
+│         │                                                                   │
+│         ▼                                                                   │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │  UI DESIGN PHASE (after requirements, before planning)              │   │
+│  │                                                                     │   │
+│  │  /ui:init ──────────────► UI-CONTEXT.md (platform, constraints)    │   │
+│  │  /ui:logo ──────────────► LOGO-SPEC.md (branding, favicons)        │   │
+│  │  /ui:setup-tokens ──────► design-tokens.json (colors, typography)  │   │
+│  │  /ui:design-screens ────► screens/*.md (all screen specs)          │   │
+│  │  /ui:define-components ─► COMPONENTS.md (component inventory)      │   │
+│  │  /ui:patterns ──────────► UI-PATTERNS.md (reusable patterns)       │   │
+│  │  /ui:export v0 ─────────► ui-exports/ (implementation prompts)     │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│         │                                                                   │
+│         ▼                                                                   │
+│  /gsd:plan-phase ──────────► PLAN.md (references UI specs)                  │
+│         │                                                                   │
+│         ▼                                                                   │
+│  /gsd:execute-phase ───────► Implementation (uses UI exports as prompts)    │
+│         │                                                                   │
+│         │  ┌─────────────────────────────────────────────────────────┐     │
+│         ├──│  DURING EXECUTION                                       │     │
+│         │  │  /ui:realize SCR-XX ──► Track screen completion         │     │
+│         │  │  /ui:status ──────────► Check coverage progress         │     │
+│         │  │  /ui:decisions ───────► Document design choices         │     │
+│         │  └─────────────────────────────────────────────────────────┘     │
+│         ▼                                                                   │
+│  /gsd:verify-work ─────────► Verify implementation matches specs            │
+│         │                                                                   │
+│         │  ┌─────────────────────────────────────────────────────────┐     │
+│         ├──│  AFTER EXECUTION                                        │     │
+│         │  │  /ui:sync ────────────► Detect spec/implementation drift│     │
+│         │  │  /ui:import-design ───► Sync visual changes back        │     │
+│         │  └─────────────────────────────────────────────────────────┘     │
+│         ▼                                                                   │
+│  /gsd:complete-milestone ──► Archive milestone                              │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+### When to Run Each UI Command
+
+| GSD Phase | UI Commands | Purpose |
+|-----------|-------------|---------|
+| **After `/gsd:new-project`** | `/ui:init` | Establish UI context from requirements |
+| | `/ui:logo` | Define branding before visual design |
+| | `/ui:setup-tokens` | Create design system foundation |
+| | `/ui:design-screens` | Specify all screens from requirements |
+| | `/ui:define-components` | Extract reusable components |
+| | `/ui:patterns` | Document UI patterns |
+| | `/ui:export` | Generate prompts for implementation |
+| **During `/gsd:execute-phase`** | `/ui:realize` | Mark screens as implemented |
+| | `/ui:status` | Monitor specification coverage |
+| | `/ui:decisions` | Record design decisions made |
+| **After `/gsd:verify-work`** | `/ui:sync` | Detect drift between specs and code |
+| | `/ui:import-design` | Backport visual refinements to specs |
+
+### Recommended Flow
+
+```bash
+# 1. Start project with GSD
+/gsd:new-project
+
+# 2. UI Design phase (do ALL of these before planning)
+/ui:init
+/ui:logo                    # Optional: if app needs branding
+/ui:setup-tokens
+/ui:design-screens          # Specify ALL screens
+/ui:define-components
+/ui:export v0               # Or stitch/figma based on workflow
+
+# 3. Plan implementation (specs are now available as reference)
+/gsd:plan-phase 1
+
+# 4. Execute (UI exports provide ready-to-use prompts)
+/gsd:execute-phase 1
+/ui:realize SCR-01          # Track as you complete screens
+/ui:realize SCR-02
+
+# 5. Verify and sync
+/gsd:verify-work
+/ui:sync                    # Catch any drift
+
+# 6. Continue to next phase or milestone
+/gsd:plan-phase 2
+```
+
 ## Project Structure
 
 ```
@@ -413,6 +508,12 @@ ui-design-cc/
 ```
 
 ## Version History
+
+### 0.2.2 — Logo and Branding
+
+- **`/ui:logo` command** — Create logo and favicon specifications
+- **UI Brander agent** — Brand identity specialist with AI prompt engineering
+- **`logo-spec.md` template** — Complete logo spec with favicon HTML and app icon sizes
 
 ### 0.2.1 — Git Integration
 
