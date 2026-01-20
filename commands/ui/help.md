@@ -20,7 +20,7 @@ Display the following help information:
 A service-agnostic UI/UX specification system that works
 alongside GSD (Get Shit Done) or standalone.
 
-Version: 0.2.0
+Version: 0.2.1
 
 INITIALIZATION
 ─────────────────────────────────────────────────────
@@ -59,6 +59,18 @@ EXPORT
                         /ui:export stitch
                         /ui:export v0 SCR-01
                         /ui:export figma
+
+BRANDING
+─────────────────────────────────────────────────────
+
+  /ui:logo              Create logo and favicon specifications
+                        Guided questions, AI image prompts
+                        Creates: LOGO-SPEC.md, logo-prompts.md
+
+                        Options:
+                        /ui:logo --refresh
+                        /ui:logo --favicon-only
+                        /ui:logo --export midjourney
 
 IMPORT
 ─────────────────────────────────────────────────────

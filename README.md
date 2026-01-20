@@ -100,6 +100,12 @@ npx ui-design-cc --local
 | `/ui:import-tokens` | Import tokens from external sources (Figma, Tailwind, W3C) |
 | `/ui:import-design` | Reverse sync designs from external tools back to specs |
 
+### Branding
+
+| Command | Description |
+|---------|-------------|
+| `/ui:logo` | Create logo and favicon specifications with AI-optimized prompts |
+
 ### Tracking
 
 | Command | Description |
@@ -146,6 +152,7 @@ npx ui-design-cc --local
 | **UI Researcher** | Context discovery, inspiration analysis | `/ui:init`, "like [Product]" |
 | **UI Specifier** | Screen specs, component definitions | `/ui:design-screens`, `/ui:define-components` |
 | **UI Prompter** | Export generation, prompt optimization | `/ui:export` |
+| **UI Brander** | Logo design, favicon specs, AI prompts | `/ui:logo` |
 
 ### Service Adapters
 
@@ -161,6 +168,7 @@ npx ui-design-cc --local
 | Template | Output Location | Purpose |
 |----------|-----------------|---------|
 | `ui-spec.md` | `.planning/UI-SPEC.md` | Master specification hub |
+| `logo-spec.md` | `.planning/LOGO-SPEC.md` | Logo and branding specification |
 | `ui-context.md` | `.planning/UI-CONTEXT.md` | Platform and constraints |
 | `screen.md` | `.planning/screens/SCR-XX-*.md` | Individual screen specs (10-section) |
 | `component.md` | `.planning/COMPONENTS.md` | Component inventory |

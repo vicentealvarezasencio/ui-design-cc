@@ -53,6 +53,7 @@ Orchestration hub that routes tasks to specialized agents (Researcher, Specifier
 | **Researcher** | Discovery, analysis, context | /ui:init, inspiration analysis |
 | **Specifier** | Specifications, wireframes | /ui:design-screens, /ui:define-components |
 | **Prompter** | Prompts, exports, handoffs | /ui:export, prompt refinement |
+| **Brander** | Logo, favicon, brand identity | /ui:logo, brand requests |
 | **Coordinator** | Routing, quick tasks, coherence | Default, lightweight tasks |
 
 </agent_ecosystem>
@@ -82,6 +83,12 @@ Task received
     │   ├─► Figma export → UI Prompter
     │   └─► Prompt iteration → UI Prompter
     │
+    ├─► Does it require branding/logo?
+    │   ├─► Logo creation → UI Brander
+    │   ├─► Favicon generation → UI Brander
+    │   ├─► Brand identity → UI Brander
+    │   └─► AI image prompts → UI Brander
+    │
     └─► Otherwise → Handle directly (Coordinator)
         ├─► Status checks
         ├─► Quick updates
@@ -105,6 +112,7 @@ Task received
 | `/ui:status` | Coordinator | - |
 | `/ui:decisions` | Coordinator | - |
 | `/ui:patterns` | Specifier | Coordinator |
+| `/ui:logo` | Brander | Coordinator |
 | `/ui:whats-new` | Coordinator | - |
 | `/ui:help` | Coordinator | - |
 
