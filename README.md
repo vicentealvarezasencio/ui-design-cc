@@ -3,7 +3,7 @@
 > A service-agnostic UI/UX design specification system for Claude Code.
 > Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.
 
-**Version:** 0.2.2
+**Version:** 0.3.0
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -46,8 +46,8 @@ npx ui-design-cc --local
 
 ```
 ~/.claude/                          # or ./.claude/ if --local
-├── commands/ui/                    # 14 slash commands
-├── agents/                         # 4 specialized agents
+├── commands/ui/                    # 17 slash commands
+├── agents/                         # 5 specialized agents
 └── ui-design/
     ├── adapters/                   # Service adapters
     └── templates/                  # Document templates
@@ -100,6 +100,14 @@ npx ui-design-cc --local
 | `/ui:import-tokens` | Import tokens from external sources (Figma, Tailwind, W3C) |
 | `/ui:import-design` | Reverse sync designs from external tools back to specs |
 
+### Code-to-Design (Reverse Engineering)
+
+| Command | Description |
+|---------|-------------|
+| `/ui:scan` | Scan existing codebase to discover components, screens, and tokens |
+| `/ui:generate-specs` | Auto-generate UI specs from code analysis (after `/ui:scan`) |
+| `/ui:reverse-engineer` | One-shot workflow: scan + generate specs + export (minimal intervention) |
+
 ### Branding
 
 | Command | Description |
@@ -133,17 +141,17 @@ npx ui-design-cc --local
 │  Routes tasks │ Maintains coherence │ Handles lightweight tasks  │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
-           ┌───────────────┼───────────────┐
-           │               │               │
-           ▼               ▼               ▼
-    ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-    │ UI Researcher│ │ UI Specifier│ │ UI Prompter │
-    │             │ │             │ │             │
-    │ • Context   │ │ • Screens   │ │ • Exports   │
-    │ • Inspiration│ │ • Components│ │ • Prompts   │
-    │ • Patterns  │ │ • Patterns  │ │ • Handoffs  │
-    │ • Analysis  │ │ • Wireframes│ │ • Iterations│
-    └─────────────┘ └─────────────┘ └─────────────┘
+       ┌───────────────┬───┴───┬───────────────┐
+       │               │       │               │
+       ▼               ▼       ▼               ▼
+┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
+│ UI Researcher│ │ UI Specifier│ │ UI Prompter │ │ UI Scanner  │
+│             │ │             │ │             │ │             │
+│ • Context   │ │ • Screens   │ │ • Exports   │ │ • Codebase  │
+│ • Inspiration│ │ • Components│ │ • Prompts   │ │ • Discovery │
+│ • Patterns  │ │ • Patterns  │ │ • Handoffs  │ │ • Tokens    │
+│ • Analysis  │ │ • Wireframes│ │ • Iterations│ │ • Reverse   │
+└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
 ```
 
 | Agent | Role | Triggered By |
@@ -153,6 +161,7 @@ npx ui-design-cc --local
 | **UI Specifier** | Screen specs, component definitions | `/ui:design-screens`, `/ui:define-components` |
 | **UI Prompter** | Export generation, prompt optimization | `/ui:export` |
 | **UI Brander** | Logo design, favicon specs, AI prompts | `/ui:logo` |
+| **UI Scanner** | Codebase reverse-engineering, token extraction | `/ui:scan`, `/ui:reverse-engineer` |
 
 ### Service Adapters
 
@@ -176,6 +185,7 @@ npx ui-design-cc --local
 | `ui-decisions.md` | `.planning/UI-DECISIONS.md` | Design decision log |
 | `ui-registry.md` | `.planning/UI-REGISTRY.md` | Realization tracking |
 | `design-tokens.json` | `.planning/design-tokens.json` | W3C tokens with dark mode |
+| `code-analysis.md` | `.planning/CODE-ANALYSIS.md` | Codebase scan results (reverse-engineering) |
 
 ## Screen Specification Format
 
@@ -245,6 +255,28 @@ W3C-format tokens with dark mode support:
 ```
 
 ## Workflows
+
+### Code-to-Design (Reverse Engineering)
+
+**For existing apps without design documentation:**
+
+```
+# Separated workflow (with review between steps)
+/ui:scan                  → Analyze codebase, output CODE-ANALYSIS.md
+[Review analysis]         → Check discovered components, screens, tokens
+/ui:generate-specs        → Auto-generate UI specs from analysis
+/ui:export stitch         → Generate design prompts
+
+# One-shot workflow (minimal intervention)
+/ui:reverse-engineer      → Scan + generate specs + export in one command
+```
+
+**What gets discovered:**
+- All components with props, variants, and usage counts
+- All screens/routes with layouts
+- Design tokens from Tailwind/CSS/theme files
+- Reusable UI patterns
+- Component dependency graph
 
 ### With GSD Integration
 
@@ -464,7 +496,7 @@ Both can be installed and used together. GSD updates won't affect UI Design file
 ui-design-cc/
 ├── README.md                 # This file
 ├── commands/
-│   └── ui/                   # 14 slash commands
+│   └── ui/                   # 17 slash commands
 │       ├── init.md
 │       ├── setup-tokens.md
 │       ├── design-screens.md
@@ -477,6 +509,10 @@ ui-design-cc/
 │       ├── status.md
 │       ├── decisions.md
 │       ├── patterns.md
+│       ├── logo.md
+│       ├── scan.md           # Code-to-design
+│       ├── generate-specs.md # Code-to-design
+│       ├── reverse-engineer.md # Code-to-design
 │       ├── whats-new.md
 │       └── help.md
 ├── agents/
@@ -484,7 +520,9 @@ ui-design-cc/
 │   ├── ui-designer.md        # Coordinator agent
 │   ├── ui-researcher.md      # Research agent
 │   ├── ui-specifier.md       # Specification agent
-│   └── ui-prompter.md        # Export agent
+│   ├── ui-prompter.md        # Export agent
+│   ├── ui-brander.md         # Branding agent
+│   └── ui-scanner.md         # Code analysis agent
 └── ui-design/
     ├── adapters/
     │   ├── README.md         # Adapter comparison
@@ -504,10 +542,23 @@ ui-design-cc/
         ├── ui-patterns.md    # Patterns template
         ├── ui-decisions.md   # Decisions template
         ├── ui-registry.md    # Registry template
+        ├── logo-spec.md      # Logo/branding template
+        ├── code-analysis.md  # Code scan output template
         └── design-tokens.json # Tokens template
 ```
 
 ## Version History
+
+### 0.3.0 — Code-to-Design Workflow
+
+- **`/ui:scan` command** — Reverse-engineer existing codebases to discover components, screens, and tokens
+- **`/ui:generate-specs` command** — Auto-generate UI specs from code analysis
+- **`/ui:reverse-engineer` command** — One-shot workflow for minimal intervention
+- **UI Scanner agent** — Specialized for codebase analysis and token extraction
+- **`code-analysis.md` template** — Complete inventory format for discovered UI elements
+- **Framework detection** — Next.js, React, Vue, Svelte, Flutter, iOS, Android
+- **Token extraction** — From Tailwind config, CSS variables, theme files
+- **Pattern detection** — Auth forms, dashboard layouts, settings sections
 
 ### 0.2.2 — Logo and Branding
 

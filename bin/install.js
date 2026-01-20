@@ -74,8 +74,8 @@ ${colors.bright}Options:${colors.reset}
   --help, -h    Show this help message
 
 ${colors.bright}What gets installed:${colors.reset}
-  commands/ui/    14 slash commands (/ui:init, /ui:export, etc.)
-  agents/         4 specialized agents (designer, researcher, specifier, prompter)
+  commands/ui/    17 slash commands (/ui:init, /ui:export, /ui:scan, etc.)
+  agents/         5 specialized agents (designer, researcher, specifier, prompter, scanner)
   ui-design/      Adapters and templates
 
 ${colors.bright}Default location:${colors.reset}
