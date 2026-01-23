@@ -2,6 +2,72 @@
 
 All notable changes to UI Design System for Claude Code.
 
+## [0.4.0] - 2026-01-23
+
+### Added
+
+- **Pencil MCP adapter** — Direct design execution via MCP
+  - Operations-based output (Insert, Update, Copy, Replace, Delete, Move, Generate)
+  - Native screenshot validation for visual verification
+  - Design system component support (`reusable: true`)
+  - Variable/theme synchronization with W3C tokens
+  - Dark mode via `$extensions.mode` in variables
+  - Layout patterns (centered card, sidebar, grids)
+  - State variation generation (error, loading, success)
+  - Iteration guidance with Update operations
+
+- **`/ui:pencil` command** — Interactive design workflow
+  - `open` — Open or create .pen design files
+  - `sync` — Bidirectional sync between specs and Pencil designs
+  - `components` — Manage design system components
+  - `validate` — Visual validation against specifications
+  - `iterate` — Interactive refinement with natural language
+  - `style` — Explore and apply style guides
+  - `layout` — Debug layout and positioning issues
+
+- **Pencil integration guide** — Comprehensive documentation
+  - `ui-design/references/pencil-guide.md`
+  - Workflows for different use cases
+  - Best practices and troubleshooting
+  - Integration with other commands
+
+### Changed
+
+- `/ui:export` now supports `pencil` as export target
+- Adapters README updated with Pencil comparison
+- Registry tracking includes Pencil node IDs
+- Expanded to 19 slash commands (added `/ui:pencil`)
+
+### Key Difference
+
+Unlike other adapters that generate text prompts for manual use, Pencil **executes designs directly** via MCP tools. This enables:
+- Automatic design generation (no copy/paste)
+- Visual validation via `get_screenshot`
+- Precise iteration with Update operations
+- Design token synchronization via `set_variables`
+- Bidirectional sync between specs and designs
+
+## [0.3.0] - 2026-01-21
+
+### Added
+
+- **Code-to-Design workflow** — Reverse engineering for existing codebases
+  - `/ui:scan` — Analyze existing codebase for UI patterns
+  - `/ui:generate-specs` — Auto-generate specs from code analysis
+  - `/ui:reverse-engineer` — One-shot: scan + generate + export
+- **UI Scanner agent** — Codebase analysis specialist
+  - Component discovery from source code
+  - Screen/route extraction
+  - Design token inference
+  - Pattern recognition
+- `code-analysis.md` template for scan output
+- Support for React, Vue, Svelte, and vanilla HTML/CSS
+
+### Changed
+
+- Expanded to 18 slash commands
+- UI Designer coordinator updated to route scanner tasks
+
 ## [0.2.2] - 2026-01-20
 
 ### Added

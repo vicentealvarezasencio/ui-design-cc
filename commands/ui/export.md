@@ -1,19 +1,20 @@
 ---
 name: ui:export
 description: Generate service-specific prompts and exports for external design tools
-argument-hint: "[service: stitch|v0|figma|generic] [screen: SCR-XX (optional)]"
+argument-hint: "[service: stitch|v0|figma|pencil|generic] [screen: SCR-XX (optional)]"
 allowed-tools: [Read, Write, Glob, Grep, AskUserQuestion, Task]
 agent: ui-prompter (for complex exports)
 ---
 
 <objective>
-Transform UI specifications into service-optimized outputs. Generate prompts for AI design tools (Stitch, V0) or export formats for design applications (Figma). Uses service-specific adapters to ensure optimal prompt generation.
+Transform UI specifications into service-optimized outputs. Generate prompts for AI design tools (Stitch, V0), export formats for design applications (Figma), or execute designs directly via MCP (Pencil). Uses service-specific adapters to ensure optimal output generation.
 </objective>
 
 <context>
 @~/.claude/ui-design/adapters/stitch.md
 @~/.claude/ui-design/adapters/v0.md
 @~/.claude/ui-design/adapters/figma.md
+@~/.claude/ui-design/adapters/pencil.md
 @~/.claude/ui-design/adapters/generic.md
 @.planning/UI-SPEC.md (required)
 @.planning/screens/*.md (required)
@@ -32,6 +33,7 @@ Options:
 - Stitch — Visual design generation (recommended for high-fidelity mockups)
 - V0 — React component generation (recommended for implementation)
 - Figma — Token export + setup guide
+- Pencil — Direct design execution via MCP (recommended for rapid prototyping)
 - Generic — Tool-agnostic prompts
 
 ## Scope Selection
@@ -51,6 +53,7 @@ Parse the command arguments:
 - `stitch` → Google Stitch prompts
 - `v0` → Vercel V0 prompts
 - `figma` → Figma token export + setup
+- `pencil` → Direct Pencil MCP execution
 - `generic` → Tool-agnostic prompts (default if no argument)
 
 Optional screen filter:
@@ -62,6 +65,8 @@ Examples:
 - `/ui:export stitch` → All screens to Stitch
 - `/ui:export v0 SCR-01` → Single screen to V0
 - `/ui:export figma` → Full Figma setup
+- `/ui:export pencil` → Direct design execution
+- `/ui:export pencil SCR-01` → Single screen to Pencil
 </step>
 
 <step name="verify_prerequisites">
@@ -358,6 +363,95 @@ Connect screens per navigation flows in UI-SPEC.md.
 ```
 </step>
 
+<step name="transform_to_pencil">
+## Pencil Export (Direct Execution)
+
+Unlike other adapters, Pencil executes designs directly via MCP tools.
+
+### Step 1: Setup Variables
+
+```javascript
+// Sync design tokens to Pencil variables
+mcp__pencil__set_variables({
+  filePath: "designs/app.pen",
+  variables: {
+    "primary": { "$value": "#2563EB", "type": "color" },
+    "primary-foreground": { "$value": "#FFFFFF", "type": "color" },
+    "background": { "$value": "#F8FAFC", "type": "color" },
+    "foreground": { "$value": "#0F172A", "type": "color" },
+    "muted": { "$value": "#64748B", "type": "color" },
+    "border": { "$value": "#E2E8F0", "type": "color" }
+    // ... extracted from design-tokens.json
+  }
+})
+```
+
+### Step 2: Generate Operations
+
+For each screen, generate batch_design operations:
+
+```javascript
+// SCR-01: Login
+screen=I(document, { type: "frame", name: "SCR-01 Login", width: 1440, height: 900, fill: "#F8FAFC" })
+center=I(screen, { type: "frame", layout: "vertical", width: "fill_container", height: "fill_container", alignItems: "center", justifyContent: "center" })
+card=I(center, { type: "frame", name: "Login Card", layout: "vertical", width: 400, padding: 32, gap: 24, fill: "#FFFFFF", cornerRadius: 8 })
+// ... full structure from spec wireframe
+```
+
+### Step 3: Execute Operations
+
+```javascript
+mcp__pencil__batch_design({
+  filePath: "designs/app.pen",
+  operations: "..." // Generated operations
+})
+```
+
+### Step 4: Validate with Screenshot
+
+```javascript
+mcp__pencil__get_screenshot({
+  filePath: "designs/app.pen",
+  nodeId: "screenId"
+})
+```
+
+### Step 5: Iterate if Needed
+
+If visual validation shows issues:
+```javascript
+U("elementId", { fill: "#2563EB", padding: 16 })
+// Re-take screenshot to verify
+```
+
+### Output Log
+
+```markdown
+# Pencil Operations Log
+
+Generated: [date]
+File: designs/app.pen
+Screens: [N] total
+
+## SCR-01: Login
+
+**Node ID:** screen_abc123
+**Status:** Generated
+**Screenshot:** Validated ✓
+
+### Operations Executed
+- Created screen frame (1440x900)
+- Created centered container
+- Created login card (400px, vertical layout)
+- Added heading, inputs, buttons
+- Set up form structure
+
+### Validation
+Screenshot captured and verified.
+No issues detected.
+```
+</step>
+
 <step name="transform_to_generic">
 ## Generic Export
 
@@ -480,11 +574,11 @@ Update `.planning/UI-REGISTRY.md`:
 ```markdown
 ## Export History
 
-| Screen | Stitch | V0 | Figma | Generic | Last Export |
-|--------|--------|----|----|---------|-------------|
-| SCR-01 | ✓ v2 | ✓ v1 | ✓ | ✓ | 2026-01-19 |
-| SCR-02 | ✓ v1 | ✓ v1 | ✓ | ✓ | 2026-01-19 |
-| SCR-03 | ○ | ○ | ○ | ○ | - |
+| Screen | Stitch | V0 | Figma | Pencil | Generic | Last Export |
+|--------|--------|----|-------|--------|---------|-------------|
+| SCR-01 | ✓ v2 | ✓ v1 | ✓ | ✓ screen_abc | ✓ | 2026-01-19 |
+| SCR-02 | ✓ v1 | ✓ v1 | ✓ | ✓ screen_def | ✓ | 2026-01-19 |
+| SCR-03 | ○ | ○ | ○ | ○ | ○ | - |
 ```
 </step>
 
@@ -499,6 +593,14 @@ Update `.planning/ui-state/coordinator-state.json`:
       "stitch": [N],
       "v0": [N],
       "figma": true/false,
+      "pencil": {
+        "count": [N],
+        "file": "designs/app.pen",
+        "node_mapping": {
+          "SCR-01": "screen_abc123",
+          "SCR-02": "screen_def456"
+        }
+      },
       "generic": [N]
     }
   }
@@ -528,8 +630,9 @@ Handoffs:
   ✓ handoffs/SCR-03-brief.md
 
 Files:
-  .planning/ui-exports/[service]-prompts.md
+  .planning/ui-exports/[service]-prompts.md (or pencil-operations.md)
   .planning/ui-exports/handoffs/*.md
+  designs/app.pen (for Pencil exports)
 
 ───────────────────────────────────────────────────────
 
@@ -555,6 +658,13 @@ Files:
 3. Build components from COMPONENTS.md specs
 4. Create screens following screen specs
 
+[For Pencil]
+1. Designs executed directly via MCP
+2. Screenshots captured for validation
+3. Review pencil-operations.md for details
+4. Iterate with Update operations if needed
+5. Node IDs recorded for future reference
+
 ───────────────────────────────────────────────────────
 
 ## ▶ After Generation
@@ -579,10 +689,16 @@ Files:
 
 <success_criteria>
 - Export files created in `.planning/ui-exports/`
-- All specified screens have corresponding prompts
+- All specified screens have corresponding prompts (or designs for Pencil)
 - Prompts follow service adapter best practices
 - Handoff documents generated for each screen
 - Design tokens included where applicable
 - Clear usage instructions provided
 - Registry and state updated
+
+**Pencil-specific criteria:**
+- Designs executed successfully via batch_design
+- Screenshots captured for visual validation
+- Node IDs recorded in registry for future updates
+- Variables synced from design tokens
 </success_criteria>

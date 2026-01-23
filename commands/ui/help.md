@@ -20,7 +20,7 @@ Display the following help information:
 A service-agnostic UI/UX specification system that works
 alongside GSD (Get Shit Done) or standalone.
 
-Version: 0.2.1
+Version: 0.4.0
 
 INITIALIZATION
 ─────────────────────────────────────────────────────
@@ -52,13 +52,47 @@ EXPORT
 ─────────────────────────────────────────────────────
 
   /ui:export [service]  Generate service-specific prompts
-                        Services: stitch, v0, figma, generic
+                        Services: stitch, v0, figma, pencil, generic
                         Creates: ui-exports/*.md
 
                         Examples:
                         /ui:export stitch
                         /ui:export v0 SCR-01
                         /ui:export figma
+                        /ui:export pencil
+
+PENCIL DESIGN (Interactive)
+─────────────────────────────────────────────────────
+
+  /ui:pencil [action]   Interactive design workflow with Pencil MCP
+                        Direct execution, visual validation, bidirectional sync
+
+                        Subcommands:
+                        /ui:pencil open [file]      Open or create .pen file
+                        /ui:pencil sync --push      Specs → Pencil
+                        /ui:pencil sync --pull      Pencil → Specs
+                        /ui:pencil sync --diff      Compare without changing
+                        /ui:pencil components       Manage design system
+                        /ui:pencil validate SCR-01  Visual validation
+                        /ui:pencil iterate SCR-01   Interactive refinement
+                        /ui:pencil style --explore  Style guide exploration
+                        /ui:pencil layout           Debug layout issues
+
+                        Guide: ~/.claude/ui-design/references/pencil-guide.md
+
+CODE-TO-DESIGN (Reverse Engineering)
+─────────────────────────────────────────────────────
+
+  /ui:scan              Analyze existing codebase for UI patterns
+                        Discovers components, screens, tokens
+                        Creates: CODE-ANALYSIS.md
+
+  /ui:generate-specs    Generate specs from code analysis
+                        Auto-creates screen and component specs
+                        Creates: screens/*.md, COMPONENTS.md
+
+  /ui:reverse-engineer  One-shot: scan + generate + export
+                        Full reverse engineering workflow
 
 BRANDING
 ─────────────────────────────────────────────────────
@@ -147,6 +181,22 @@ TYPICAL WORKFLOWS
   /ui:import-design         Capture changes
   /ui:realize SCR-01        Mark as done
 
+## Pencil Interactive Flow
+
+  /ui:pencil open --new     Create design file
+  /ui:pencil style          Pick a style guide
+  /ui:pencil sync --push    Push specs to Pencil
+  /ui:pencil iterate SCR-01 Refine interactively
+  /ui:pencil validate all   Validate against specs
+  /ui:export v0             Export to code
+
+## Reverse Engineering Flow
+
+  /ui:scan                  Analyze existing code
+  /ui:generate-specs        Create specs from code
+  /ui:pencil sync --push    Visualize in Pencil
+  /ui:pencil iterate        Refine designs
+
 ## Maintenance
 
   /ui:sync                  Check for drift
@@ -165,6 +215,8 @@ ARTIFACTS CREATED
   ├── UI-PATTERNS.md          Pattern library
   ├── UI-REGISTRY.md          Realization tracking
   ├── COMPONENTS.md           Component inventory
+  ├── LOGO-SPEC.md            Logo and branding specs
+  ├── CODE-ANALYSIS.md        Reverse engineering results
   ├── design-tokens.json      Design tokens (W3C)
   ├── screens/
   │   ├── SCR-01-login.md     Individual screen specs
@@ -174,10 +226,15 @@ ARTIFACTS CREATED
   │   ├── stitch-prompts.md   Stitch-optimized prompts
   │   ├── v0-prompts.md       V0-optimized prompts
   │   ├── figma-tokens.json   Figma Variables export
+  │   ├── pencil-operations.md  Pencil operations log
   │   ├── generic-prompts.md  Tool-agnostic prompts
   │   └── handoffs/           Design handoff docs
   └── ui-state/
-      └── coordinator-state.json
+      ├── coordinator-state.json
+      └── pencil-state.json   Pencil session state
+
+  designs/
+  └── *.pen                   Pencil design files
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -193,6 +250,10 @@ SUPPORTED SERVICES
   Figma       Design tool integration
               Best for: Designer handoff
 
+  Pencil      Direct design via MCP (Interactive)
+              Best for: Rapid prototyping, iteration
+              Unique: Executes directly, visual validation
+
   Generic     Tool-agnostic prompts
               Best for: Any AI design tool
 
@@ -207,6 +268,8 @@ The system uses specialized agents:
   UI Researcher   Context, inspiration, analysis
   UI Specifier    Screens, components, patterns
   UI Prompter     Exports, prompts, handoffs
+  UI Brander      Logo and brand identity
+  UI Scanner      Code analysis, reverse engineering
 
 Agents are spawned automatically based on task complexity.
 
