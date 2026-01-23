@@ -1,8 +1,14 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Discussions - Ideas & Questions
-    url: https://github.com/vicentealvarezasencio/ui-design-cc/discussions
-    about: Have an idea or question? Start a discussion!
-  - name: Discussions - Show & Tell
+  - name: 💡 Ideas
+    url: https://github.com/vicentealvarezasencio/ui-design-cc/discussions/categories/ideas
+    about: Share ideas for new features or improvements
+  - name: 🙏 Q&A
+    url: https://github.com/vicentealvarezasencio/ui-design-cc/discussions/categories/q-a
+    about: Ask the community for help
+  - name: 🙌 Show and Tell
     url: https://github.com/vicentealvarezasencio/ui-design-cc/discussions/categories/show-and-tell
-    about: Share what you've built with ui-design-cc
+    about: Show off what you've built with ui-design-cc
+  - name: 💬 General
+    url: https://github.com/vicentealvarezasencio/ui-design-cc/discussions/categories/general
+    about: Chat about anything related to the project
