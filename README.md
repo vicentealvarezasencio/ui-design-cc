@@ -3,7 +3,7 @@
 > A service-agnostic UI/UX design specification system for Claude Code.
 > Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.
 
-**Version:** 0.3.0
+**Version:** 0.4.0
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -358,6 +358,7 @@ W3C-format tokens with dark mode support:
 | [Google Stitch](https://stitch.withgoogle.com/) | Visual prompts | Full-page layouts, Figma export | Quick mockups, exploration |
 | [V0 by Vercel](https://v0.dev/) | Code prompts | Production React + shadcn/ui | React/Next.js implementation |
 | [Figma](https://figma.com/) | Variables + specs | Collaboration, prototyping | Design team workflows |
+| Pencil MCP | **Direct execution** | Interactive, screenshots, bidirectional | Rapid prototyping, iteration |
 | Generic | Universal prompts | Tool-agnostic | Unknown tools, documentation |
 
 ## Philosophy
@@ -549,6 +550,17 @@ ui-design-cc/
 
 ## Version History
 
+### 0.4.0 — Pencil MCP Integration
+
+- **`/ui:pencil` command** — Interactive design workflow with 7 subcommands
+- **Pencil adapter** — Direct design execution via MCP (no copy/paste)
+- **Bidirectional sync** — Push specs to Pencil, pull designs back to specs
+- **Visual validation** — Screenshot comparison against specifications
+- **Interactive refinement** — Natural language design iteration
+- **Design system management** — Create and manage reusable components
+- **Style guide exploration** — Browse and apply style guides
+- **Layout debugging** — Identify and fix positioning issues
+
 ### 0.3.0 — Code-to-Design Workflow
 
 - **`/ui:scan` command** — Reverse-engineer existing codebases to discover components, screens, and tokens
@@ -592,12 +604,28 @@ ui-design-cc/
 - Export to Stitch, V0, Figma, Generic
 - GSD integration support
 
+## Feedback & Community
+
+We'd love to hear from you!
+
+### Report Issues
+- [Bug Reports](https://github.com/vicentealvarezasencio/ui-design-cc/issues/new?template=bug_report.yml) — Something not working?
+- [Feature Requests](https://github.com/vicentealvarezasencio/ui-design-cc/issues/new?template=feature_request.yml) — Have an idea?
+- [Adapter Requests](https://github.com/vicentealvarezasencio/ui-design-cc/issues/new?template=adapter_request.yml) — Want a new design tool supported?
+- [Documentation](https://github.com/vicentealvarezasencio/ui-design-cc/issues/new?template=documentation.yml) — Docs unclear?
+
+### Join the Discussion
+- [GitHub Discussions](https://github.com/vicentealvarezasencio/ui-design-cc/discussions) — Ideas, questions, show & tell
+
 ## Contributing
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+**Quick start:**
 1. Fork the repository
 2. Create a feature branch
 3. Follow existing patterns for commands, agents, adapters
-4. Update relevant README files
+4. Update CHANGELOG.md
 5. Submit a pull request
 
 ## License
@@ -607,3 +635,5 @@ MIT
 ---
 
 **Need help?** Run `/ui:help` to see all commands and usage examples.
+
+**Have feedback?** [Open an issue](https://github.com/vicentealvarezasencio/ui-design-cc/issues) or [start a discussion](https://github.com/vicentealvarezasencio/ui-design-cc/discussions).

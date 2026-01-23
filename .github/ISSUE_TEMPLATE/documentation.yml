@@ -1,0 +1,65 @@
+name: Documentation Improvement
+description: Suggest improvements to documentation
+title: "[Docs]: "
+labels: ["documentation", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Help us improve the documentation!
+
+  - type: dropdown
+    id: doc_type
+    attributes:
+      label: Documentation Type
+      description: What kind of documentation needs improvement?
+      options:
+        - README
+        - INSTRUCTIONS.md
+        - Command help text
+        - Adapter documentation
+        - Template documentation
+        - Agent documentation
+        - Inline comments
+        - Examples
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      description: Where is the documentation that needs improvement?
+      placeholder: "e.g., README.md, commands/ui/pencil.md, line 45"
+
+  - type: dropdown
+    id: issue_type
+    attributes:
+      label: Issue Type
+      description: What's the problem?
+      options:
+        - Missing information
+        - Incorrect information
+        - Unclear explanation
+        - Outdated content
+        - Typo / Grammar
+        - Missing example
+        - Broken link
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What needs to be improved?
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggested Improvement
+      description: How would you improve it?

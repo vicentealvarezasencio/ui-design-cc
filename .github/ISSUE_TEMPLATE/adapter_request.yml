@@ -1,0 +1,74 @@
+name: New Adapter Request
+description: Request support for a new design tool
+title: "[Adapter]: "
+labels: ["adapter", "enhancement", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Want us to support a new design tool? Tell us about it!
+
+  - type: input
+    id: tool_name
+    attributes:
+      label: Design Tool Name
+      description: What's the name of the design tool?
+      placeholder: "e.g., Framer, Sketch, Adobe XD"
+    validations:
+      required: true
+
+  - type: input
+    id: tool_url
+    attributes:
+      label: Tool URL
+      description: Link to the tool's website
+      placeholder: "https://..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: tool_type
+    attributes:
+      label: Tool Type
+      description: What kind of tool is it?
+      options:
+        - AI Design Generator (like Stitch)
+        - Code Generator (like V0)
+        - Design Application (like Figma)
+        - Prototyping Tool
+        - Design System Tool
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why This Tool?
+      description: Why would this adapter be valuable? What's your use case?
+      placeholder: |
+        I use this tool because...
+
+        It would help with...
+    validations:
+      required: true
+
+  - type: textarea
+    id: output
+    attributes:
+      label: Expected Output
+      description: What kind of output would the adapter generate?
+      placeholder: |
+        - Prompts for the tool?
+        - Direct API integration?
+        - Export format?
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be interested in helping?
+      options:
+        - label: I'd be willing to help develop this adapter
+        - label: I can provide example prompts/outputs for this tool
+        - label: I can help test the adapter

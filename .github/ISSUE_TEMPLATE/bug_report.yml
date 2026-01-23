@@ -1,0 +1,95 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below.
+
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      description: What version of ui-design-cc are you using?
+      placeholder: "0.4.0"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: command
+    attributes:
+      label: Which command is affected?
+      description: Select the command where you encountered the bug
+      options:
+        - /ui:init
+        - /ui:setup-tokens
+        - /ui:design-screens
+        - /ui:define-components
+        - /ui:patterns
+        - /ui:export
+        - /ui:pencil
+        - /ui:logo
+        - /ui:import-tokens
+        - /ui:import-design
+        - /ui:realize
+        - /ui:sync
+        - /ui:status
+        - /ui:decisions
+        - /ui:scan
+        - /ui:generate-specs
+        - /ui:reverse-engineer
+        - /ui:whats-new
+        - /ui:help
+        - Other / Multiple
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: What happened? What did you expect to happen?
+      placeholder: |
+        What happened:
+
+        What I expected:
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: How can we reproduce this bug?
+      placeholder: |
+        1. Run /ui:init
+        2. Then run /ui:export pencil
+        3. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: error
+    attributes:
+      label: Error Message
+      description: If there's an error message, paste it here
+      render: shell
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+        - macOS
+        - Linux
+        - Windows
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional Context
+      description: Any other context, screenshots, or files that might help
