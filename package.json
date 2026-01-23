@@ -1,6 +1,6 @@
 {
   "name": "ui-design-cc",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "A service-agnostic UI/UX design specification system for Claude Code. Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.",
   "type": "module",
   "bin": {
