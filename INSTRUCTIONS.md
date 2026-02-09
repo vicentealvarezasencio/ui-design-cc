@@ -76,7 +76,7 @@ npx ui-design-cc --local
 - What constraints should I know about?
 ```
 
-**Example output:** `.planning/UI-CONTEXT.md`
+**Example output:** `.planning/design/UI-CONTEXT.md`
 
 ---
 
@@ -100,7 +100,7 @@ npx ui-design-cc --local
 /ui:setup-tokens --from-figma       # Import from Figma Variables
 ```
 
-**Example output:** `.planning/design-tokens.json`
+**Example output:** `.planning/design/design-tokens.json`
 
 ---
 
@@ -139,7 +139,7 @@ Creates a 10-section specification for each screen:
 /ui:design-screens --quick                # Minimal specs (sections 1-5 only)
 ```
 
-**Example output:** `.planning/screens/SCR-01-login.md`
+**Example output:** `.planning/design/screens/SCR-01-login.md`
 
 ---
 
@@ -161,7 +161,7 @@ Creates a 10-section specification for each screen:
 /ui:define-components --from-code         # Extract from existing codebase
 ```
 
-**Example output:** `.planning/COMPONENTS.md`
+**Example output:** `.planning/design/COMPONENTS.md`
 
 ---
 
@@ -181,7 +181,7 @@ Creates a 10-section specification for each screen:
 /ui:patterns extract SCR-01               # Extract pattern from screen
 ```
 
-**Example output:** `.planning/UI-PATTERNS.md`
+**Example output:** `.planning/design/UI-PATTERNS.md`
 
 ---
 
@@ -217,7 +217,7 @@ Creates a 10-section specification for each screen:
 /ui:export --all                          # Export all screens
 ```
 
-**Example output:** `.planning/ui-exports/stitch-prompts.md`
+**Example output:** `.planning/design/ui-exports/stitch-prompts.md`
 
 ---
 
@@ -297,7 +297,7 @@ Creates a 10-section specification for each screen:
 /ui:scan src/components                   # Scan specific directory
 ```
 
-**Example output:** `.planning/CODE-ANALYSIS.md`
+**Example output:** `.planning/design/CODE-ANALYSIS.md`
 
 ---
 
@@ -361,7 +361,7 @@ Combines three operations in one:
 /ui:realize --all                         # Mark all screens realized
 ```
 
-**Example output:** `.planning/UI-REGISTRY.md`
+**Example output:** `.planning/design/UI-REGISTRY.md`
 
 ---
 
@@ -776,9 +776,9 @@ Reference UI specifications in your plans:
 ## Implementation Steps
 
 1. Implement Login Screen
-   - Reference: `.planning/screens/SCR-01-login.md`
+   - Reference: `.planning/design/screens/SCR-01-login.md`
    - Components needed: Button, Input, Card (see COMPONENTS.md)
-   - Export: `.planning/ui-exports/v0-prompts.md#login`
+   - Export: `.planning/design/ui-exports/v0-prompts.md#login`
 ```
 
 #### During `/gsd:execute-phase`
@@ -824,10 +824,10 @@ When planning GSD phases that involve UI work, structure them like this:
 - Set up component library foundation
 
 ## UI References
-- Screen Specs: `.planning/screens/`
-- Components: `.planning/COMPONENTS.md`
-- Tokens: `.planning/design-tokens.json`
-- V0 Prompts: `.planning/ui-exports/v0-prompts.md`
+- Screen Specs: `.planning/design/screens/`
+- Components: `.planning/design/COMPONENTS.md`
+- Tokens: `.planning/design/design-tokens.json`
+- V0 Prompts: `.planning/design/ui-exports/v0-prompts.md`
 
 ## Tasks
 1. Set up design token system from `design-tokens.json`
@@ -1003,10 +1003,10 @@ The system uses specialized agents to handle different concerns:
 
 ### State Persistence
 
-Agent state persists across sessions in `.planning/ui-state/`:
+Agent state persists across sessions in `.planning/design/ui-state/`:
 
 ```
-.planning/ui-state/
+.planning/design/ui-state/
 ├── coordinator-state.json    # Master routing state
 ├── researcher-state.json     # Research sessions
 ├── specifier-state.json      # Specification progress
@@ -1176,7 +1176,7 @@ Agent state persists across sessions in `.planning/ui-state/`:
 **Solution:** Manually review `CODE-ANALYSIS.md` against specs. Some drift requires manual resolution.
 
 #### "Agent state seems corrupted"
-**Solution:** Delete `.planning/ui-state/` directory. State will be regenerated on next command.
+**Solution:** Delete `.planning/design/ui-state/` directory. State will be regenerated on next command.
 
 ### Getting Help
 

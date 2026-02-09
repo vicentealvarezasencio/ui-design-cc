@@ -81,7 +81,7 @@ This directory contains specialized agents for the UI Design System. The multi-a
 Each agent maintains its own state file, coordinated by the master state:
 
 ```
-.planning/ui-state/
+.planning/design/ui-state/
 ├── coordinator-state.json   # Master state, tracks all agents
 ├── researcher-state.json    # Research sessions, discoveries
 ├── specifier-state.json     # Specification progress

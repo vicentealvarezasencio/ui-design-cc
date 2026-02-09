@@ -176,16 +176,16 @@ npx ui-design-cc --local
 
 | Template | Output Location | Purpose |
 |----------|-----------------|---------|
-| `ui-spec.md` | `.planning/UI-SPEC.md` | Master specification hub |
+| `ui-spec.md` | `.planning/design/UI-SPEC.md` | Master specification hub |
 | `logo-spec.md` | `.planning/LOGO-SPEC.md` | Logo and branding specification |
-| `ui-context.md` | `.planning/UI-CONTEXT.md` | Platform and constraints |
-| `screen.md` | `.planning/screens/SCR-XX-*.md` | Individual screen specs (10-section) |
-| `component.md` | `.planning/COMPONENTS.md` | Component inventory |
-| `ui-patterns.md` | `.planning/UI-PATTERNS.md` | Reusable UI patterns |
-| `ui-decisions.md` | `.planning/UI-DECISIONS.md` | Design decision log |
-| `ui-registry.md` | `.planning/UI-REGISTRY.md` | Realization tracking |
-| `design-tokens.json` | `.planning/design-tokens.json` | W3C tokens with dark mode |
-| `code-analysis.md` | `.planning/CODE-ANALYSIS.md` | Codebase scan results (reverse-engineering) |
+| `ui-context.md` | `.planning/design/UI-CONTEXT.md` | Platform and constraints |
+| `screen.md` | `.planning/design/screens/SCR-XX-*.md` | Individual screen specs (10-section) |
+| `component.md` | `.planning/design/COMPONENTS.md` | Component inventory |
+| `ui-patterns.md` | `.planning/design/UI-PATTERNS.md` | Reusable UI patterns |
+| `ui-decisions.md` | `.planning/design/UI-DECISIONS.md` | Design decision log |
+| `ui-registry.md` | `.planning/design/UI-REGISTRY.md` | Realization tracking |
+| `design-tokens.json` | `.planning/design/design-tokens.json` | W3C tokens with dark mode |
+| `code-analysis.md` | `.planning/design/CODE-ANALYSIS.md` | Codebase scan results (reverse-engineering) |
 
 ## Screen Specification Format
 

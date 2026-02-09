@@ -11,14 +11,14 @@ This folder contains templates for all UI specification documents created by the
 
 | Template | Output File | Created By | Purpose |
 |----------|-------------|------------|---------|
-| `ui-spec.md` | `.planning/UI-SPEC.md` | `/ui:design-screens` | Master specification hub |
-| `ui-context.md` | `.planning/UI-CONTEXT.md` | `/ui:init` | Platform and constraints |
-| `screen.md` | `.planning/screens/SCR-XX-*.md` | `/ui:design-screens` | Individual screen specs |
-| `component.md` | `.planning/COMPONENTS.md` | `/ui:define-components` | Component inventory |
-| `ui-patterns.md` | `.planning/UI-PATTERNS.md` | `/ui:patterns` | Reusable UI patterns |
-| `ui-decisions.md` | `.planning/UI-DECISIONS.md` | `/ui:decisions` | Design decision log |
-| `ui-registry.md` | `.planning/UI-REGISTRY.md` | `/ui:realize` | Realization tracking |
-| `design-tokens.json` | `.planning/design-tokens.json` | `/ui:setup-tokens` | Design tokens (W3C) |
+| `ui-spec.md` | `.planning/design/UI-SPEC.md` | `/ui:design-screens` | Master specification hub |
+| `ui-context.md` | `.planning/design/UI-CONTEXT.md` | `/ui:init` | Platform and constraints |
+| `screen.md` | `.planning/design/screens/SCR-XX-*.md` | `/ui:design-screens` | Individual screen specs |
+| `component.md` | `.planning/design/COMPONENTS.md` | `/ui:define-components` | Component inventory |
+| `ui-patterns.md` | `.planning/design/UI-PATTERNS.md` | `/ui:patterns` | Reusable UI patterns |
+| `ui-decisions.md` | `.planning/design/UI-DECISIONS.md` | `/ui:decisions` | Design decision log |
+| `ui-registry.md` | `.planning/design/UI-REGISTRY.md` | `/ui:realize` | Realization tracking |
+| `design-tokens.json` | `.planning/design/design-tokens.json` | `/ui:setup-tokens` | Design tokens (W3C) |
 
 ---
 

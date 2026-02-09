@@ -181,7 +181,7 @@ Bidirectional synchronization between specs and Pencil designs.
 ```
 
 **Push workflow (Specs → Pencil):**
-1. Reads your `.planning/screens/*.md` specs
+1. Reads your `.planning/design/screens/*.md` specs
 2. Compares to existing Pencil screens
 3. Shows what will be created/updated
 4. Asks for confirmation
@@ -576,7 +576,7 @@ Best for: Checking that designs match specifications.
 /ui:pencil validate all --report
 
 # Step 3: Review report
-# Opens .planning/ui-exports/validation-report.md
+# Opens .planning/design/ui-exports/validation-report.md
 
 # Step 4: Fix issues found
 /ui:pencil iterate SCR-01  # For each screen with issues
@@ -688,9 +688,9 @@ Best for: When designs and specs evolve together.
 /ui:pencil sync --pull
 
 # Review generated specs
-# .planning/screens/*.md now populated
-# .planning/COMPONENTS.md now populated
-# .planning/design-tokens.json now populated
+# .planning/design/screens/*.md now populated
+# .planning/design/COMPONENTS.md now populated
+# .planning/design/design-tokens.json now populated
 
 # Enhance specs with behavior details
 # (manually add interactions, states, etc.)
