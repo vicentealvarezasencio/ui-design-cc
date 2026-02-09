@@ -3,7 +3,7 @@
 > A service-agnostic UI/UX design specification system for Claude Code.
 > Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.
 
-**Version:** 0.4.0
+**Version:** 0.4.1
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -549,6 +549,13 @@ ui-design-cc/
 ```
 
 ## Version History
+
+### 0.4.1 — Pencil Hidden Directory Fix
+
+- **Fix:** Prevent `.pen` files from being created under hidden (dot-prefixed) directories
+- Pencil MCP crashes when file paths pass through directories like `.planning/`
+- All `.pen` files now enforced to live in `designs/` at the project root
+- Added path validation, redirect logic, and error handling for hidden directory paths
 
 ### 0.4.0 — Pencil MCP Integration
 

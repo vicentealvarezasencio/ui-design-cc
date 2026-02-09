@@ -2,6 +2,17 @@
 
 All notable changes to UI Design System for Claude Code.
 
+## [0.4.1] - 2026-02-09
+
+### Fixed
+
+- **Pencil hidden directory crash** — `.pen` files created under hidden (dot-prefixed) directories like `.planning/` caused Pencil MCP to crash
+  - Added path validation to `open` subcommand enforcing `designs/` at project root
+  - Added redirect logic when users provide hidden-directory paths
+  - Added "File Location Rule" to state management section
+  - Added "File in Hidden Directory Path" error handling with recovery instructions
+  - Updated Pencil adapter metadata with file location constraint
+
 ## [0.4.0] - 2026-01-23
 
 ### Added
