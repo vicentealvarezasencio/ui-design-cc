@@ -28,7 +28,7 @@ AI coding assistants like Claude Code excel at implementation but lack structure
 
 - **Specify before you build** — Define screens and components before writing code
 - **Service agnostic** — Your specs work with any design tool (Stitch, V0, Figma, etc.)
-- **Works with GSD** — Complements Get-Shit-Done workflow, runs after requirements
+- **Works with GSD/GMSD** — Complements [GSD](https://github.com/vicentealvarezasencio/get-shit-done) and [GMSD](https://github.com/vicentealvarezasencio/get-more-shit-done) workflows
 - **Design tokens** — W3C-standard tokens with dark mode support
 - **Multi-agent architecture** — Specialized agents for research, specification, and export
 
@@ -385,16 +385,36 @@ Inspired by GSD's git philosophy:
 
 See `ui-design/references/git-integration.md` for full protocol.
 
+## Full Orchestration: Get More Shit Done (GMSD)
+
+For the complete development workflow — research, design, plan, execute, verify — with **coordinated agent teams**, this package is fully integrated into [Get More Shit Done (GMSD)](https://github.com/vicentealvarezasencio/get-more-shit-done).
+
+**What GMSD adds:**
+- **Project orchestration** — Structured lifecycle from requirements to deployment
+- **Agent Teams** — Multiple Claude sessions collaborating via shared task lists and messaging
+- **Team-based execution** — Researchers, planners, executors, and verifiers working in parallel
+- **Design integration** — All `/ui:` commands available as `/gmsd:` with project lifecycle hooks
+- **Observable execution** — Watch all agents in tmux split panes
+
+```bash
+# Install GMSD (includes all UI Design commands under /gmsd: prefix)
+npx get-more-shit-done-cc
+```
+
+**Use ui-design-cc standalone** when you only need UI/UX design for any project.
+**Use GMSD** when you want the full workflow with coordinated teams.
+
 ## Coexistence with GSD
 
-This system installs to separate namespaces:
+This system installs to separate namespaces and coexists with [GSD](https://github.com/vicentealvarezasencio/get-shit-done):
 
 ```
 GSD:           commands/gsd/*, agents/gsd-*, get-shit-done/
 UI Design:     commands/ui/*, agents/ui-*, ui-design/
+GMSD:          commands/gmsd/*, agents/gmsd-*, get-more-shit-done/
 ```
 
-Both can be installed and used together. GSD updates won't affect UI Design files.
+All three can be installed together. Updates to one won't affect the others.
 
 ### UI Commands in the GSD Cycle
 
