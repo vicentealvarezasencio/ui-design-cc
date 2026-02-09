@@ -51,14 +51,13 @@ function log(message, color = 'reset') {
 
 function showBanner() {
   console.log(`
-${colors.cyan}┌─────────────────────────────────────────────────────────────────┐
-│                                                                 │
-│   ${colors.bright}UI Design System for Claude Code${colors.reset}${colors.cyan}                            │
-│   ${colors.dim}v${VERSION}${colors.reset}${colors.cyan}                                                         │
-│                                                                 │
-│   Specifications  ──────►  Adapters  ──────►  Design Tools     │
-│                                                                 │
-└─────────────────────────────────────────────────────────────────┘${colors.reset}
+${colors.cyan}██╗   ██╗██╗  ██████╗ ███████╗███████╗██╗ ██████╗ ███╗   ██╗
+██║   ██║██║  ██╔══██╗██╔════╝██╔════╝██║██╔════╝ ████╗  ██║
+██║   ██║██║  ██║  ██║█████╗  ███████╗██║██║  ███╗██╔██╗ ██║
+██║   ██║██║  ██║  ██║██╔══╝  ╚════██║██║██║   ██║██║╚██╗██║
+╚██████╔╝██║  ██████╔╝███████╗███████║██║╚██████╔╝██║ ╚████║
+ ╚═════╝ ╚═╝  ╚═════╝ ╚══════╝╚══════╝╚═╝ ╚═════╝ ╚═╝  ╚═══╝${colors.reset}
+  ${colors.dim}Design System for Claude Code  v${VERSION}${colors.reset}
 `);
 }
 
