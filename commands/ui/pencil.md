@@ -1132,3 +1132,50 @@ Create it?
 - Fixes suggested or applied
 
 </success_criteria>
+
+<workflow_guidance>
+
+## Next Steps After Pencil Work
+
+After any Pencil subcommand completes, suggest the logical next action:
+
+**After /ui:pencil open:**
+- `/ui:pencil sync --push` — Push screen specs into the design
+- `/ui:pencil iterate` — Start refining the design interactively
+
+**After /ui:pencil sync:**
+- `/ui:pencil validate` — Verify the design matches specs
+- `/ui:pencil iterate` — Refine specific elements
+- `/ui:realize` — Mark synced screens as realized
+
+**After /ui:pencil iterate (done):**
+- `/ui:pencil sync --pull` — Pull changes back into specs
+- `/ui:pencil validate` — Check against spec requirements
+- `/ui:export` — Export updated designs to other tools
+
+**After /ui:pencil validate:**
+- `/ui:pencil iterate` — Fix any issues found
+- `/ui:realize` — Mark validated screens as realized
+- `/ui:sync` — Sync specs with implementation
+
+**After /ui:pencil style:**
+- `/ui:pencil iterate` — Refine after style application
+- `/ui:export` — Export the styled design
+
+**General workflow reminder:**
+```
+───────────────────────────────────────────────────────
+
+## ▶ Typical Flow
+
+/ui:pencil open → sync --push → iterate → validate → sync --pull → /ui:realize
+
+Other commands:
+  /ui:export      — Export to Figma, V0, Stitch, or generic
+  /ui:sync        — Check drift between specs and code
+  /ui:status      — Review overall progress
+
+───────────────────────────────────────────────────────
+```
+
+</workflow_guidance>

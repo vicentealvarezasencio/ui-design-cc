@@ -311,6 +311,15 @@ Impact: [level]
 
 File Updated: .planning/design/UI-DECISIONS.md
 
+───────────────────────────────────────────────────────
+
+## ▶ Continue With
+
+- `/ui:design-screens` — Update screens affected by this decision
+- `/ui:sync` — Check if implementations need updating
+- `/ui:export` — Regenerate exports reflecting the change
+- `/ui:status` — Review overall spec coverage
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 </step>

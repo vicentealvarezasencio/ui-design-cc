@@ -326,9 +326,37 @@ git push origin $(git branch --show-current)
 
 </git_integration>
 
-<examples>
+<completion>
 
-## Example Session
+## Completion Summary
 
 ```
-User: /ui:logo
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ UI ► LOGO SPEC CREATED
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Logo:        [style] [type] for [app name]
+Colors:      [primary] + [secondary/accent]
+Prompts:     Generated for [tools]
+Favicon:     [Yes/No]
+
+Files:
+  .planning/LOGO-SPEC.md
+  .planning/design/ui-exports/logo-prompts.md
+
+───────────────────────────────────────────────────────
+
+## ▶ Next Up
+
+**Generate the logo** — Use the prompts with your preferred tool:
+  - `/ui:pencil` — Design directly in Pencil
+  - `/ui:export` — Export prompts for Stitch, V0, Figma
+
+**Continue designing:**
+  - `/ui:design-screens` — Create screen specifications
+  - `/ui:setup-tokens` — Set up design tokens (if not done)
+
+───────────────────────────────────────────────────────
+```
+
+</completion>
