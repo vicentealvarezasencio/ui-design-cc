@@ -190,20 +190,32 @@ Bidirectional synchronization between specs and Pencil designs.
 - `--tokens` — Sync only design tokens/variables
 - `--components` — Sync only components
 
-### Process: Push (Specs → Pencil)
+### Process: Push (Specs → Pencil) — ORCHESTRATOR PATTERN
+
+**CRITICAL:** Push uses an **orchestrator + subagent** architecture. The orchestrator (this command) handles setup and coordination. Each screen is processed by a dedicated **ui-pencil-screen** subagent in its own context window. This prevents the orchestrator's context from being overwhelmed by per-screen MCP operations.
 
 <step name="sync_push_load">
-Load specifications:
+**Orchestrator: Load and prepare context**
+
+Load all specifications that will be needed by subagents:
 
 ```javascript
 // Read all specs
 const specs = glob(".planning/design/screens/*.md")
 const tokens = readFile(".planning/design/design-tokens.json")
 const components = readFile(".planning/design/COMPONENTS.md")
+const pencilState = readFile(".planning/design/ui-state/pencil-state.json")
+```
+
+Also read the Pencil adapter rules (summary for subagent context):
+```javascript
+const adapterRules = readFile("~/.claude/ui-design/adapters/pencil.md")
 ```
 </step>
 
 <step name="sync_push_compare">
+**Orchestrator: Compare and plan**
+
 Compare with existing Pencil content:
 
 ```javascript
@@ -232,50 +244,28 @@ Will UPDATE (spec changed):
 Already synced:
   ✓ SCR-02: Signup
 
-Proceed with push?
+Proceed with push? (3 screens via parallel agents)
 ───────────────────────────────────────────────────────
 ```
 </step>
 
-<step name="sync_push_execute">
-For each screen to create/update:
+<step name="sync_push_setup">
+**Orchestrator: One-time setup (before spawning agents)**
+
+Perform shared setup that only needs to happen once:
 
 ```javascript
-// Generate operations from spec
-const operations = transformSpecToOperations(spec)
+// 1. Ensure file is open
+mcp__pencil__get_editor_state({ include_schema: false })
 
-// Execute
-mcp__pencil__batch_design({
+// 2. Sync design tokens to variables (once for all screens)
+mcp__pencil__set_variables({
   filePath: "designs/app.pen",
-  operations: operations
+  variables: convertW3CTokensToPencil(tokens)
 })
 
-// Validate with screenshot
-mcp__pencil__get_screenshot({
-  filePath: "designs/app.pen",
-  nodeId: screenId
-})
-```
-</step>
-
-### Process: Pull (Pencil → Specs)
-
-<step name="sync_pull_read">
-Read all designs from Pencil:
-
-```javascript
-// Get all screens
-mcp__pencil__batch_get({
-  filePath: "designs/app.pen",
-  patterns: [{ name: "SCR-.*" }],
-  readDepth: 4
-})
-
-// Get variables
-mcp__pencil__get_variables({ filePath: "designs/app.pen" })
-
-// Get components
-mcp__pencil__batch_get({
+// 3. Get available reusable components (for all agents to reference)
+const existingComponents = mcp__pencil__batch_get({
   filePath: "designs/app.pen",
   patterns: [{ reusable: true }],
   readDepth: 2
@@ -283,49 +273,235 @@ mcp__pencil__batch_get({
 ```
 </step>
 
-<step name="sync_pull_transform">
-Transform Pencil nodes to spec format:
+<step name="sync_push_spawn_agents">
+**Orchestrator: Spawn one subagent per screen**
 
-```markdown
-# SCR-01: Login
+For each screen that needs to be created or updated, spawn a **ui-pencil-screen** agent using the Task tool. Launch agents **in parallel** for independent screens.
 
-Route: /login
-Layout: centered-card
-Status: Designed (from Pencil)
+```
+For each screen (SCR-XX) to push:
+  Task(
+    subagent_type: "general-purpose",
+    description: "Push SCR-XX to Pencil",
+    prompt: """
+    You are a UI Pencil Screen Agent. Your job is to push exactly ONE screen
+    to a Pencil .pen design file using MCP tools.
 
-## Wireframe
-[Generate ASCII from node structure]
+    Read the agent instructions: ~/.claude/agents/ui-pencil-screen.md
 
-## Components
-[Extract from node tree]
+    OPERATION: push
 
-## Design Tokens Used
-[Map from variables]
+    PEN FILE: designs/app.pen
+
+    EXISTING NODE ID: {node_id from pencil-state or "none"}
+
+    SCREEN SPEC:
+    ---
+    {inline full content of .planning/design/screens/SCR-XX-name.md}
+    ---
+
+    DESIGN TOKENS:
+    {inline full content of design-tokens.json}
+
+    AVAILABLE COMPONENTS:
+    {list of reusable component names and IDs from step above}
+
+    ADAPTER RULES SUMMARY:
+    - Use I() for Insert, U() for Update, R() for Replace, C() for Copy, M() for Move, D() for Delete
+    - Max 25 operations per batch_design call
+    - Always validate with get_screenshot after creation
+    - Use meaningful node names with SCR-XX prefix
+    - Node types: frame, text, rectangle, ellipse, ref, group
+    - Layout: "horizontal", "vertical", "grid"
+    - Sizing: number, "fill_container", "hug_content"
+
+    Execute the push and return a structured result with:
+    - screen ID
+    - status (success/partial/failed)
+    - node_id created/updated
+    - operations count
+    - any issues
+    """
+  )
+```
+
+**IMPORTANT:** Launch all screen agents **in parallel** using multiple Task calls in a single message. This maximizes throughput — each agent works in its own context window simultaneously.
+
+Example with 3 screens:
+```
+// Single message with 3 parallel Task calls:
+Task("Push SCR-01 to Pencil", ..., subagent_type: "general-purpose")
+Task("Push SCR-03 to Pencil", ..., subagent_type: "general-purpose")
+Task("Push SCR-04 to Pencil", ..., subagent_type: "general-purpose")
 ```
 </step>
 
-<step name="sync_pull_write">
-Write or update spec files:
+<step name="sync_push_collect">
+**Orchestrator: Collect results and update state**
+
+After all subagents complete, collect their results:
+
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ UI ► SYNC PUSH COMPLETE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Pushed via parallel agents:
+
+  ✓ SCR-01: Login      (updated, node: screen_abc123)
+  ✓ SCR-03: Dashboard  (created, node: screen_xyz789)
+  ✓ SCR-04: Settings   (created, node: screen_def456)
+
+Already synced:
+  ✓ SCR-02: Signup
+
+Total: 3 screens pushed, 1 already synced
+───────────────────────────────────────────────────────
+```
+
+Update state files:
+1. Update `.planning/design/ui-state/pencil-state.json` with new/updated node_ids
+2. Update `.planning/design/UI-REGISTRY.md` with sync status
+</step>
+
+### Process: Pull (Pencil → Specs) — ORCHESTRATOR PATTERN
+
+**CRITICAL:** Pull uses the same **orchestrator + subagent** architecture as push. The orchestrator handles discovery and shared data. Each screen is extracted by a dedicated subagent in its own context window.
+
+<step name="sync_pull_discover">
+**Orchestrator: Discover screens and shared data**
+
+Read all designs from Pencil at shallow depth (orchestrator only needs names and IDs):
+
+```javascript
+// Get all screen names and IDs (shallow read — just metadata)
+mcp__pencil__batch_get({
+  filePath: "designs/app.pen",
+  patterns: [{ name: "SCR-.*" }],
+  readDepth: 1
+})
+
+// Get variables (shared — orchestrator writes tokens file)
+mcp__pencil__get_variables({ filePath: "designs/app.pen" })
+
+// Get reusable components list (shared)
+mcp__pencil__batch_get({
+  filePath: "designs/app.pen",
+  patterns: [{ reusable: true }],
+  readDepth: 1
+})
+```
+
+Report what was found:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ UI ► SYNC PULL PREVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Found in Pencil:
+
+Screens:
+  • SCR-01: Login      (node: screen_abc123)
+  • SCR-02: Signup     (node: screen_def456)
+  • SCR-05: Profile    (node: screen_ghi789) — NEW
+
+Variables: 24 defined
+Components: 12 reusable
+
+Proceed with pull? (3 screens via parallel agents)
+───────────────────────────────────────────────────────
+```
+</step>
+
+<step name="sync_pull_shared">
+**Orchestrator: Handle shared data (tokens, components)**
+
+The orchestrator handles shared data that applies to all screens:
+
+```javascript
+// Update design tokens from Pencil variables
+// Write to .planning/design/design-tokens.json
+
+// Update components inventory from reusable components
+// Write to .planning/design/COMPONENTS.md
+```
+</step>
+
+<step name="sync_pull_spawn_agents">
+**Orchestrator: Spawn one subagent per screen**
+
+For each screen to pull, spawn a **ui-pencil-screen** agent:
+
+```
+For each screen (SCR-XX) to pull:
+  Task(
+    subagent_type: "general-purpose",
+    description: "Pull SCR-XX from Pencil",
+    prompt: """
+    You are a UI Pencil Screen Agent. Your job is to extract exactly ONE screen
+    from a Pencil .pen design file and write/update its specification.
+
+    Read the agent instructions: ~/.claude/agents/ui-pencil-screen.md
+
+    OPERATION: pull
+
+    PEN FILE: designs/app.pen
+
+    SCREEN NODE:
+      id: "{node_id}"
+      name: "{screen_name}"
+
+    EXISTING SPEC PATH: {path or "none"}
+
+    SPEC TEMPLATE (use this structure for new specs):
+    ---
+    {inline screen.md template from ui-design/templates/}
+    ---
+
+    DESIGN TOKENS (for reference mapping):
+    {inline design-tokens.json}
+
+    Steps:
+    1. Read the screen node with readDepth: 4 using batch_get
+    2. Take a screenshot with get_screenshot
+    3. Transform the node tree into the spec template format
+    4. Write the spec file to .planning/design/screens/SCR-XX-name.md
+    5. Return structured result with spec_path and components found
+    """
+  )
+```
+
+**IMPORTANT:** Launch all screen agents **in parallel**.
+</step>
+
+<step name="sync_pull_collect">
+**Orchestrator: Collect results and report**
+
+After all subagents complete:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
  UI ► SYNC PULL COMPLETE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Extracted from Pencil:
+Extracted via parallel agents:
 
 Screens:
   ✓ .planning/design/screens/SCR-01-login.md (updated)
+  ✓ .planning/design/screens/SCR-02-signup.md (updated)
   ✓ .planning/design/screens/SCR-05-profile.md (created)
 
-Tokens:
+Shared data (by orchestrator):
   ✓ .planning/design/design-tokens.json (updated)
-
-Components:
   ✓ .planning/design/COMPONENTS.md (updated)
 
+Total: 3 screens pulled via parallel agents
 ───────────────────────────────────────────────────────
 ```
+
+Update state files:
+1. Update `.planning/design/ui-state/pencil-state.json` with sync status
+2. Update `.planning/design/UI-REGISTRY.md`
 </step>
 
 ### Process: Diff
@@ -495,7 +671,34 @@ Visual validation of designs against specifications.
 
 ### Process
 
+**For single screen:** Handle directly (no subagent needed).
+**For "all" or multiple screens:** Use the orchestrator + subagent pattern — spawn one agent per screen in parallel.
+
+<step name="validate_multi_screen">
+**When validating multiple screens (e.g., `validate all`):**
+
+Use the same orchestrator pattern as sync push/pull:
+
+1. Read all specs and get screen node IDs from pencil-state.json
+2. Spawn one **ui-pencil-screen** agent per screen with operation: "validate"
+3. Each agent captures screenshot, compares to spec, returns validation result
+4. Orchestrator collects and presents combined report
+
+```
+For each screen:
+  Task(
+    subagent_type: "general-purpose",
+    description: "Validate SCR-XX in Pencil",
+    prompt: "... OPERATION: validate, SCREEN SPEC: {...}, NODE ID: {...} ..."
+  )
+```
+
+Launch all validation agents **in parallel**.
+</step>
+
 <step name="validate_load">
+**When validating a single screen (direct — no subagent):**
+
 Load spec and capture screenshot:
 
 ```javascript

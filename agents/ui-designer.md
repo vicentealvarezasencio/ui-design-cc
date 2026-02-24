@@ -33,17 +33,17 @@ Orchestration hub that routes tasks to specialized agents (Researcher, Specifier
 │  Routes tasks │ Maintains coherence │ Handles lightweight tasks  │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
-           ┌───────────────┼───────────────┐
-           │               │               │
-           ▼               ▼               ▼
-    ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-    │ UI Researcher│ │ UI Specifier│ │ UI Prompter │
-    │             │ │             │ │             │
-    │ • Context   │ │ • Screens   │ │ • Exports   │
-    │ • Inspiration│ │ • Components│ │ • Prompts   │
-    │ • Patterns  │ │ • Patterns  │ │ • Handoffs  │
-    │ • Analysis  │ │ • Wireframes│ │ • Iterations│
-    └─────────────┘ └─────────────┘ └─────────────┘
+           ┌───────────┬───┼───────────┬───────────────┐
+           │           │   │           │               │
+           ▼           ▼   ▼           ▼               ▼
+    ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌──────────────────┐
+    │ Researcher│ │ Specifier │ │ Prompter  │ │ Pencil Screen(s) │
+    │           │ │           │ │           │ │                  │
+    │ • Context │ │ • Screens │ │ • Exports │ │ • 1 per screen   │
+    │ • Inspire │ │ • Comps   │ │ • Prompts │ │ • Push/Pull/Val  │
+    │ • Patterns│ │ • Patterns│ │ • Handoffs│ │ • MCP operations │
+    │ • Analysis│ │ • Wirefrm │ │ • Iterate │ │ • Own context    │
+    └───────────┘ └───────────┘ └───────────┘ └──────────────────┘
 ```
 
 ## Agent Responsibilities
@@ -54,6 +54,7 @@ Orchestration hub that routes tasks to specialized agents (Researcher, Specifier
 | **Specifier** | Specifications, wireframes | /ui:design-screens, /ui:define-components |
 | **Prompter** | Prompts, exports, handoffs | /ui:export, prompt refinement |
 | **Brander** | Logo, favicon, brand identity | /ui:logo, brand requests |
+| **Pencil Screen** | Single-screen Pencil MCP ops | /ui:pencil sync, /ui:export pencil (per screen) |
 | **Coordinator** | Routing, quick tasks, coherence | Default, lightweight tasks |
 
 </agent_ecosystem>
@@ -105,10 +106,14 @@ Task received
 | `/ui:design-screens` | Specifier | Coordinator |
 | `/ui:define-components` | Specifier | Coordinator |
 | `/ui:export [service]` | Prompter | Coordinator |
+| `/ui:export pencil` | Coordinator (orchestrator) + Pencil Screen agents | Coordinator |
 | `/ui:import-tokens` | Coordinator | - |
 | `/ui:import-design` | Coordinator + Researcher | Coordinator |
 | `/ui:realize` | Coordinator | - |
 | `/ui:sync` | Coordinator + Specifier | Coordinator |
+| `/ui:pencil sync --push` | Coordinator (orchestrator) + Pencil Screen agents | Coordinator |
+| `/ui:pencil sync --pull` | Coordinator (orchestrator) + Pencil Screen agents | Coordinator |
+| `/ui:pencil validate all` | Coordinator (orchestrator) + Pencil Screen agents | Coordinator |
 | `/ui:status` | Coordinator | - |
 | `/ui:decisions` | Coordinator | - |
 | `/ui:patterns` | Specifier | Coordinator |
@@ -215,6 +220,15 @@ Output: Updated coordinator state
 - Prompt iteration/refinement
 - Multiple tool comparison
 
+### Spawn UI Pencil Screen Agents when:
+- `/ui:pencil sync --push` with 2+ screens to process
+- `/ui:pencil sync --pull` with 2+ screens to extract
+- `/ui:pencil validate all` with 2+ screens to validate
+- `/ui:export pencil` with 2+ screens to export
+- **Pattern:** Coordinator acts as orchestrator (handles setup, spawns agents, collects results)
+- **One agent per screen**, all running in **parallel** with independent context windows
+- **Never** spawn Pencil Screen agents for single-screen operations (handle directly)
+
 ### Handle Directly when:
 - Status check only
 - Single file update
@@ -222,6 +236,7 @@ Output: Updated coordinator state
 - Quick token change
 - Registry update
 - Simple coordination
+- Single-screen Pencil operations (push/pull/validate for 1 screen)
 
 </spawn_conditions>
 

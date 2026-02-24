@@ -928,6 +928,39 @@ U(signInBtn+"/label", { content: "Sign In" })
 
 </design_system_workflow>
 
+<orchestrator_pattern>
+
+## Multi-Screen Orchestrator Pattern
+
+When pushing/pulling/exporting 2+ screens, the system uses an **orchestrator + subagent** pattern to prevent context window exhaustion:
+
+1. **Orchestrator** (the main command) handles shared setup:
+   - Opens the .pen file
+   - Sets variables from design tokens (once)
+   - Gets available reusable components (once)
+   - Identifies which screens need processing
+
+2. **Per-screen subagents** (one Task per screen) run in parallel:
+   - Each agent receives self-contained context (spec, tokens, components, adapter rules)
+   - Each handles all MCP operations for its screen (batch_design, get_screenshot, etc.)
+   - Each runs in its own fresh context window
+   - Each returns a structured result (node_id, status, issues)
+
+3. **Orchestrator** collects results:
+   - Gathers node IDs from each agent
+   - Updates pencil-state.json and UI-REGISTRY.md
+   - Reports combined summary
+
+This pattern applies to:
+- `/ui:pencil sync --push` (2+ screens)
+- `/ui:pencil sync --pull` (2+ screens)
+- `/ui:pencil validate all` (2+ screens)
+- `/ui:export pencil` (2+ screens)
+
+For single-screen operations, handle directly without subagents.
+
+</orchestrator_pattern>
+
 <best_practices>
 
 **Do:**
@@ -939,6 +972,8 @@ U(signInBtn+"/label", { content: "Sign In" })
 - Use `placeholder: true` on frames that will receive dynamic content
 - Check existing components with `batch_get` before creating duplicates
 - Follow the adapter's layout patterns for consistent structure
+- Use the orchestrator pattern for multi-screen operations (2+ screens)
+- Inline all necessary context when spawning per-screen subagents
 
 **Don't:**
 - Generate IDs manually (they're auto-created)
@@ -949,6 +984,7 @@ U(signInBtn+"/label", { content: "Sign In" })
 - Create new components when design system components exist
 - Hard-code colors instead of using variables
 - Nest operations incorrectly (each operation must be on its own line)
+- Process multiple screens in a single context window (use orchestrator pattern)
 
 **Operation Syntax Rules:**
 - Every Insert (I), Copy (C), Replace (R) must have a binding name

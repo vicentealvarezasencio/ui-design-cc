@@ -114,12 +114,22 @@ The adapter provides:
 <step name="spawn_prompter_or_handle">
 ## Generate Prompts
 
-**For 5+ screens or complex specs:**
+**For Pencil service (any screen count 2+):**
+- Use the **orchestrator + subagent** pattern (see transform_to_pencil step)
+- Orchestrator handles setup (open file, set variables, get components)
+- Each screen gets its own **ui-pencil-screen** subagent in a fresh context window
+- All screen agents run **in parallel** for maximum efficiency
+- This prevents context window exhaustion from per-screen MCP operations
+
+**For Pencil service (1 screen only):**
+- Handle directly without spawning (single screen fits in context)
+
+**For other services (Stitch, V0, Figma, Generic) with 5+ screens:**
 - Spawn UI Prompter agent with full context
 - Agent handles all transformations
 - Returns complete prompt set
 
-**For 1-4 screens:**
+**For other services with 1-4 screens:**
 - Handle directly without spawning
 - Apply adapter rules sequentially
 </step>
@@ -364,14 +374,20 @@ Connect screens per navigation flows in UI-SPEC.md.
 </step>
 
 <step name="transform_to_pencil">
-## Pencil Export (Direct Execution)
+## Pencil Export (Direct Execution) — ORCHESTRATOR PATTERN
 
-Unlike other adapters, Pencil executes designs directly via MCP tools.
+Unlike other adapters, Pencil executes designs directly via MCP tools. To prevent context window exhaustion when exporting multiple screens, this uses an **orchestrator + subagent** architecture: the orchestrator handles setup and coordination, while each screen is processed by a dedicated subagent in its own context window.
 
-### Step 1: Setup Variables
+### Orchestrator Step 1: Pre-flight and Setup
 
 ```javascript
-// Sync design tokens to Pencil variables
+// 1. Check/open the .pen file
+mcp__pencil__get_editor_state({ include_schema: false })
+
+// 2. Open or verify the target file
+mcp__pencil__open_document({ filePathOrTemplate: "designs/app.pen" })
+
+// 3. Sync design tokens to Pencil variables (ONE TIME for all screens)
 mcp__pencil__set_variables({
   filePath: "designs/app.pen",
   variables: {
@@ -384,45 +400,90 @@ mcp__pencil__set_variables({
     // ... extracted from design-tokens.json
   }
 })
-```
 
-### Step 2: Generate Operations
-
-For each screen, generate batch_design operations:
-
-```javascript
-// SCR-01: Login
-screen=I(document, { type: "frame", name: "SCR-01 Login", width: 1440, height: 900, fill: "#F8FAFC" })
-center=I(screen, { type: "frame", layout: "vertical", width: "fill_container", height: "fill_container", alignItems: "center", justifyContent: "center" })
-card=I(center, { type: "frame", name: "Login Card", layout: "vertical", width: 400, padding: 32, gap: 24, fill: "#FFFFFF", cornerRadius: 8 })
-// ... full structure from spec wireframe
-```
-
-### Step 3: Execute Operations
-
-```javascript
-mcp__pencil__batch_design({
+// 4. Get existing reusable components (for subagent context)
+mcp__pencil__batch_get({
   filePath: "designs/app.pen",
-  operations: "..." // Generated operations
+  patterns: [{ reusable: true }],
+  readDepth: 2
+})
+
+// 5. Get existing screens to detect updates vs creates
+mcp__pencil__batch_get({
+  filePath: "designs/app.pen",
+  patterns: [{ name: "SCR-.*" }],
+  readDepth: 1
 })
 ```
 
-### Step 4: Validate with Screenshot
+### Orchestrator Step 2: Prepare per-screen context
 
-```javascript
-mcp__pencil__get_screenshot({
-  filePath: "designs/app.pen",
-  nodeId: "screenId"
-})
+For each screen to export, prepare a self-contained context bundle:
+- Screen spec content (inlined)
+- Design tokens (inlined)
+- Available reusable components and their IDs
+- Existing node ID (if updating)
+- Pencil adapter operation syntax rules
+
+### Orchestrator Step 3: Spawn parallel subagents
+
+**For single screen:** Handle directly without subagent (same as before).
+
+**For 2+ screens:** Spawn one **ui-pencil-screen** agent per screen using the Task tool. Launch **all agents in parallel**.
+
+```
+For each screen (SCR-XX) to export:
+  Task(
+    subagent_type: "general-purpose",
+    description: "Export SCR-XX to Pencil",
+    prompt: """
+    You are a UI Pencil Screen Agent. Your job is to create/update exactly
+    ONE screen in a Pencil .pen design file using MCP tools.
+
+    Read the agent instructions: ~/.claude/agents/ui-pencil-screen.md
+
+    OPERATION: push
+
+    PEN FILE: designs/app.pen
+
+    EXISTING NODE ID: {node_id or "none"}
+
+    SCREEN SPEC:
+    ---
+    {inline full content of .planning/design/screens/SCR-XX-name.md}
+    ---
+
+    DESIGN TOKENS:
+    {inline design-tokens.json}
+
+    AVAILABLE COMPONENTS:
+    {list of reusable component names and IDs}
+
+    ADAPTER RULES SUMMARY:
+    - Use I() for Insert, U() for Update, R() for Replace, C() for Copy
+    - Max 25 operations per batch_design call — split if needed
+    - Always validate with get_screenshot after creation
+    - Use meaningful node names with SCR-XX prefix
+    - Node types: frame, text, rectangle, ellipse, ref, group
+    - Layout: "horizontal", "vertical", "grid"
+    - Sizing: number, "fill_container", "hug_content"
+
+    Execute the push and return a structured result including:
+    - screen ID, status, node_id, operations count, any issues
+    """
+  )
 ```
 
-### Step 5: Iterate if Needed
+**IMPORTANT:** All screen agents run **in parallel** — each gets its own fresh context window and processes its screen independently.
 
-If visual validation shows issues:
-```javascript
-U("elementId", { fill: "#2563EB", padding: 16 })
-// Re-take screenshot to verify
-```
+### Orchestrator Step 4: Collect results and finalize
+
+After all subagents complete:
+
+1. Collect node IDs from each agent's result
+2. Update pencil-state.json with screen-to-node mappings
+3. Update UI-REGISTRY.md with export status
+4. Write pencil-operations.md log
 
 ### Output Log
 
@@ -432,23 +493,31 @@ U("elementId", { fill: "#2563EB", padding: 16 })
 Generated: [date]
 File: designs/app.pen
 Screens: [N] total
+Method: Parallel subagents (1 per screen)
 
-## SCR-01: Login
+## Results
 
+| Screen | Status | Node ID | Operations | Screenshot |
+|--------|--------|---------|------------|------------|
+| SCR-01 | ✓ Created | screen_abc123 | 18 ops | Validated |
+| SCR-02 | ✓ Created | screen_def456 | 22 ops | Validated |
+| SCR-03 | ✓ Created | screen_ghi789 | 25 ops | Validated |
+
+## Per-Screen Details
+
+### SCR-01: Login
 **Node ID:** screen_abc123
 **Status:** Generated
+**Agent:** Completed in own context window
 **Screenshot:** Validated ✓
 
-### Operations Executed
-- Created screen frame (1440x900)
-- Created centered container
-- Created login card (400px, vertical layout)
-- Added heading, inputs, buttons
-- Set up form structure
+### SCR-02: Signup
+**Node ID:** screen_def456
+**Status:** Generated
+**Agent:** Completed in own context window
+**Screenshot:** Validated ✓
 
-### Validation
-Screenshot captured and verified.
-No issues detected.
+[... repeat for each screen]
 ```
 </step>
 
@@ -697,8 +766,10 @@ Files:
 - Registry and state updated
 
 **Pencil-specific criteria:**
-- Designs executed successfully via batch_design
-- Screenshots captured for visual validation
-- Node IDs recorded in registry for future updates
-- Variables synced from design tokens
+- Designs executed successfully via batch_design (one subagent per screen)
+- Screenshots captured for visual validation (by each subagent)
+- Node IDs recorded in registry for future updates (collected by orchestrator)
+- Variables synced from design tokens (once by orchestrator before spawning agents)
+- All screen agents ran in parallel for maximum efficiency
+- Orchestrator context remained lean (no MCP tool call bloat)
 </success_criteria>
