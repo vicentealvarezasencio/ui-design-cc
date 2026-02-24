@@ -20,7 +20,7 @@ Display the following help information:
 A service-agnostic UI/UX specification system that works
 alongside GSD (Get Shit Done) or standalone.
 
-Version: 0.4.0
+Version: 0.6.0
 
 INITIALIZATION
 ─────────────────────────────────────────────────────

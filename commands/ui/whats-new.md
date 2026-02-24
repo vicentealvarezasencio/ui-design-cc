@@ -17,7 +17,41 @@ Display version history and recent changes:
  UI Design System — What's New
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-Current Version: 0.2.0
+Current Version: 0.6.0
+
+## v0.6.0 — GSD Integration Bridge + Canvas Layout Planning
+
+NEW FEATURES:
+  • GSD-to-UI Spec Bridge
+    - /ui:init now adds UI Specs rule to CLAUDE.md
+      so GSD agents always read screen specs before coding
+    - /ui:design-screens now links spec paths + component
+      lists into REQUIREMENTS.md for each requirement
+    - /ui:sync now reconciles requirement-spec links after
+      Pencil pull (new components, stale links, orphans)
+
+  • Retroactive Fix for Existing Projects
+    - /ui:sync detects missing CLAUDE.md integration rule
+      and missing REQUIREMENTS.md links, auto-fixes both
+    - One command brings old projects up to date
+
+  • Canvas Layout Pre-planning (Parallel Push)
+    - Orchestrator pre-calculates canvas positions for all
+      screens before spawning parallel subagents
+    - Uses snapshot_layout + find_empty_space_on_canvas
+    - Each agent receives assigned {x, y} coordinates
+    - Eliminates screen overlap when pushing 2+ screens
+
+───────────────────────────────────────────────────────
+
+## v0.5.0 — Orchestrator + Subagent Pattern
+
+NEW FEATURES:
+  • Parallel multi-screen push/pull via subagents
+  • Per-screen agents with isolated context windows
+  • Orchestrator handles shared setup and collection
+
+───────────────────────────────────────────────────────
 
 ## v0.2.0 — Multi-Agent Architecture
 

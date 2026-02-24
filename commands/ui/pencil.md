@@ -273,13 +273,77 @@ const existingComponents = mcp__pencil__batch_get({
 ```
 </step>
 
+<step name="sync_push_plan_canvas_layout">
+**Orchestrator: Pre-calculate canvas positions for all screens**
+
+**CRITICAL:** Since subagents run in parallel, they all see the same canvas state at launch. Without pre-assigned positions, multiple agents may try to place their screen in the same blank space, causing overlaps.
+
+Before spawning agents, the orchestrator must calculate and assign a unique canvas position for each screen:
+
+```javascript
+// 1. Get current canvas layout — see what already exists and where
+const layout = mcp__pencil__snapshot_layout({
+  filePath: "designs/app.pen"
+})
+
+// 2. For screens that already have a node_id (update), keep their existing position
+//    For NEW screens, find empty space sequentially
+
+// 3. Determine screen dimensions (default: 1440x900 for desktop, 375x812 for mobile)
+const screenWidth = 1440   // or from UI-CONTEXT.md viewport
+const screenHeight = 900
+const GAP = 100            // gap between screens on canvas
+
+// 4. For each NEW screen, call find_empty_space_on_canvas sequentially,
+//    BUT account for space that will be taken by previously-assigned screens
+//    (since they don't exist yet on canvas)
+
+const assignments = []
+let lastAssigned = null  // track the rightmost assigned position
+
+for (const screen of newScreensToCreate) {
+  if (lastAssigned === null) {
+    // First new screen: find actual empty space on canvas
+    const space = mcp__pencil__find_empty_space_on_canvas({
+      filePath: "designs/app.pen",
+      direction: "right",    // or "below" depending on preference
+      width: screenWidth,
+      height: screenHeight,
+      padding: GAP
+    })
+    assignments.push({ screen: screen.id, x: space.x, y: space.y })
+    lastAssigned = { x: space.x, y: space.y }
+  } else {
+    // Subsequent screens: offset from last assigned position (not from canvas state)
+    const nextX = lastAssigned.x + screenWidth + GAP
+    const nextY = lastAssigned.y  // same row, or wrap to next row if too wide
+    assignments.push({ screen: screen.id, x: nextX, y: nextY })
+    lastAssigned = { x: nextX, y: nextY }
+  }
+}
+
+// For EXISTING screens being updated: use their current position from layout
+for (const screen of existingScreensToUpdate) {
+  const existingNode = findNodeInLayout(layout, screen.node_id)
+  assignments.push({ screen: screen.id, x: existingNode.x, y: existingNode.y, node_id: screen.node_id })
+}
+```
+
+**Result:** An `assignments` array where every screen has a pre-calculated `{ screen, x, y }`. This is passed to each subagent so they know exactly where to place their screen — no conflicts possible.
+</step>
+
 <step name="sync_push_spawn_agents">
 **Orchestrator: Spawn one subagent per screen**
 
 For each screen that needs to be created or updated, spawn a **ui-pencil-screen** agent using the Task tool. Launch agents **in parallel** for independent screens.
 
+Each agent receives its **pre-assigned canvas position** from the orchestrator's layout plan.
+
 ```
 For each screen (SCR-XX) to push:
+  // Get the pre-calculated position for this screen
+  const { x, y } = assignments.find(a => a.screen === "SCR-XX")
+
   Task(
     subagent_type: "general-purpose",
     description: "Push SCR-XX to Pencil",
@@ -294,6 +358,14 @@ For each screen (SCR-XX) to push:
     PEN FILE: designs/app.pen
 
     EXISTING NODE ID: {node_id from pencil-state or "none"}
+
+    ASSIGNED CANVAS POSITION:
+    x: {x}
+    y: {y}
+    IMPORTANT: You MUST place your screen frame at exactly these coordinates.
+    Do NOT call find_empty_space_on_canvas — your position is pre-assigned by
+    the orchestrator to avoid overlaps with other parallel agents.
+    When creating the screen frame, set: { ..., x: {x}, y: {y} }
 
     SCREEN SPEC:
     ---
