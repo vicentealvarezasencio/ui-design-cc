@@ -2,6 +2,37 @@
 
 All notable changes to UI Design System for Claude Code.
 
+## [0.5.0] - 2026-02-24
+
+### Added
+
+- **Orchestrator + subagent pattern for Pencil MCP** — Prevents context window exhaustion when pushing, pulling, or exporting multiple screens
+  - New `ui-pencil-screen` agent handles all Pencil MCP operations for a single screen
+  - One agent per screen, all running in **parallel** with independent context windows
+  - Orchestrator handles shared setup (open file, set variables, get components) then spawns agents
+  - Orchestrator collects results and updates state/registry after agents complete
+  - Single-screen operations still handled directly (no subagent overhead)
+
+- **`ui-pencil-screen` agent** (`agents/ui-pencil-screen.md`)
+  - Autonomous screen-level worker for push, pull, and validate operations
+  - Receives self-contained context from orchestrator (spec, tokens, components, adapter rules)
+  - Returns structured results (node_id, status, issues) to orchestrator
+  - Never writes to state files (orchestrator's responsibility)
+
+### Changed
+
+- `/ui:pencil sync --push` now uses orchestrator pattern for 2+ screens
+- `/ui:pencil sync --pull` now uses orchestrator pattern for 2+ screens
+- `/ui:pencil validate all` now uses orchestrator pattern for 2+ screens
+- `/ui:export pencil` now uses orchestrator pattern for 2+ screens
+- UI Designer (coordinator) routing updated with Pencil Screen agent entries
+- Pencil adapter updated with orchestrator pattern documentation and best practices
+- Agent architecture diagrams updated across all documentation
+
+### Why This Matters
+
+Previously, pushing multiple screens to Pencil consumed the entire context window after 1-2 screens, requiring users to relaunch the command repeatedly. Now each screen gets its own fresh context, the orchestrator stays lean, and all screens process in parallel — making multi-screen operations both reliable and fast.
+
 ## [0.4.1] - 2026-02-09
 
 ### Fixed

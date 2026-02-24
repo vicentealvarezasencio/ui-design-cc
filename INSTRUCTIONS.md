@@ -1,7 +1,7 @@
 # UI Design System for Claude Code — Complete Instructions
 
-> **Version:** 0.3.0
-> **Last Updated:** January 2026
+> **Version:** 0.5.0
+> **Last Updated:** February 2026
 
 A comprehensive guide to using the UI Design specification system — from commands to workflows to integration strategies.
 
@@ -968,26 +968,21 @@ The system uses specialized agents to handle different concerns:
 │              Routes tasks | Maintains coherence | Quick ops      │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
-           ┌───────────────┼───────────────┐
-           │               │               │
-           ▼               ▼               ▼
-    ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-    │ UI Researcher│ │ UI Specifier│ │ UI Prompter │
-    │ • /ui:init  │ │ • screens   │ │ • /ui:export│
-    │ • context   │ │ • components│ │ • prompts   │
-    │ • patterns  │ │ • wireframes│ │ • handoffs  │
-    └─────────────┘ └─────────────┘ └─────────────┘
-           │               │               │
-           └───────────────┼───────────────┘
-                           │
-          ┌────────────────┼────────────────┐
-          ▼                                 ▼
-    ┌─────────────┐                  ┌─────────────┐
-    │ UI Brander  │                  │ UI Scanner  │
-    │ • /ui:logo  │                  │ • /ui:scan  │
-    │ • favicon   │                  │ • reverse   │
-    │ • brand ID  │                  │ • analysis  │
-    └─────────────┘                  └─────────────┘
+       ┌───────────┬───────┼───────┬───────────┬───────────────┐
+       │           │       │       │           │               │
+       ▼           ▼       ▼       ▼           ▼               ▼
+┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌──────────────────┐
+│ Researcher│ │ Specifier │ │ Prompter  │ │ Scanner   │ │ Pencil Screen(s) │
+│ • /ui:init│ │ • screens │ │ • export  │ │ • /ui:scan│ │ • 1 per screen   │
+│ • context │ │ • comps   │ │ • prompts │ │ • reverse │ │ • push/pull/val  │
+│ • patterns│ │ • wirefrm │ │ • handoffs│ │ • analysis│ │ • MCP operations │
+└───────────┘ └───────────┘ └───────────┘ └───────────┘ └──────────────────┘
+          │                                                      │
+          ▼                                                      ▼
+    ┌─────────────┐                              Spawned in parallel by
+    │ UI Brander  │                              orchestrator for 2+ screens
+    │ • /ui:logo  │
+    └─────────────┘
 ```
 
 ### Agent Responsibilities
@@ -997,9 +992,20 @@ The system uses specialized agents to handle different concerns:
 | **UI Designer** | All commands (routing) | Coordination, state, quick operations |
 | **UI Researcher** | `/ui:init`, inspiration | Context discovery, competitive analysis |
 | **UI Specifier** | `/ui:design-screens`, `/ui:define-components` | Detailed specifications |
-| **UI Prompter** | `/ui:export` (5+ screens) | Service-specific prompt generation |
+| **UI Prompter** | `/ui:export` (non-Pencil, 5+ screens) | Service-specific prompt generation |
 | **UI Brander** | `/ui:logo` | Brand identity, AI image prompts |
 | **UI Scanner** | `/ui:scan`, `/ui:reverse-engineer` | Code analysis, reverse engineering |
+| **UI Pencil Screen** | `/ui:pencil sync`, `/ui:export pencil` | Single-screen Pencil MCP ops (parallel) |
+
+### Pencil MCP Orchestrator Pattern
+
+When pushing, pulling, or exporting 2+ screens to Pencil, the coordinator acts as an **orchestrator**:
+
+1. **Setup (once):** Open .pen file, set variables, get reusable components
+2. **Spawn:** One `ui-pencil-screen` agent per screen, all in **parallel**
+3. **Collect:** Gather node IDs, update state, report summary
+
+Each screen agent runs in its own context window, preventing the context exhaustion that previously limited multi-screen operations to 1-2 screens before requiring a relaunch.
 
 ### State Persistence
 
@@ -1011,7 +1017,8 @@ Agent state persists across sessions in `.planning/design/ui-state/`:
 ├── researcher-state.json     # Research sessions
 ├── specifier-state.json      # Specification progress
 ├── prompter-state.json       # Export history
-└── scanner-state.json        # Scan sessions
+├── scanner-state.json        # Scan sessions
+└── pencil-state.json         # Pencil session, screen-node mappings
 ```
 
 ---

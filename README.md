@@ -3,7 +3,7 @@
 > A service-agnostic UI/UX design specification system for Claude Code.
 > Define screens, components, and design tokens — export prompts for Stitch, V0, Figma, or any design tool.
 
-**Version:** 0.4.1
+**Version:** 0.5.0
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -46,8 +46,8 @@ npx ui-design-cc --local
 
 ```
 ~/.claude/                          # or ./.claude/ if --local
-├── commands/ui/                    # 17 slash commands
-├── agents/                         # 5 specialized agents
+├── commands/ui/                    # 19 slash commands
+├── agents/                         # 7 specialized agents
 └── ui-design/
     ├── adapters/                   # Service adapters
     └── templates/                  # Document templates
@@ -141,17 +141,17 @@ npx ui-design-cc --local
 │  Routes tasks │ Maintains coherence │ Handles lightweight tasks  │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
-       ┌───────────────┬───┴───┬───────────────┐
-       │               │       │               │
-       ▼               ▼       ▼               ▼
-┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│ UI Researcher│ │ UI Specifier│ │ UI Prompter │ │ UI Scanner  │
-│             │ │             │ │             │ │             │
-│ • Context   │ │ • Screens   │ │ • Exports   │ │ • Codebase  │
-│ • Inspiration│ │ • Components│ │ • Prompts   │ │ • Discovery │
-│ • Patterns  │ │ • Patterns  │ │ • Handoffs  │ │ • Tokens    │
-│ • Analysis  │ │ • Wireframes│ │ • Iterations│ │ • Reverse   │
-└─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
+       ┌───────────┬───────┼───────┬───────────┬───────────────┐
+       │           │       │       │           │               │
+       ▼           ▼       ▼       ▼           ▼               ▼
+┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌──────────────────┐
+│ Researcher│ │ Specifier │ │ Prompter  │ │ Scanner   │ │ Pencil Screen(s) │
+│           │ │           │ │           │ │           │ │                  │
+│ • Context │ │ • Screens │ │ • Exports │ │ • Codebase│ │ • 1 per screen   │
+│ • Inspire │ │ • Comps   │ │ • Prompts │ │ • Tokens  │ │ • Push/Pull/Val  │
+│ • Patterns│ │ • Patterns│ │ • Handoffs│ │ • Reverse │ │ • MCP operations │
+│ • Analysis│ │ • Wirefrm │ │ • Iterate │ │ • Patterns│ │ • Own context    │
+└───────────┘ └───────────┘ └───────────┘ └───────────┘ └──────────────────┘
 ```
 
 | Agent | Role | Triggered By |
@@ -159,9 +159,21 @@ npx ui-design-cc --local
 | **UI Designer** | Coordinator — routes tasks, maintains state | Default |
 | **UI Researcher** | Context discovery, inspiration analysis | `/ui:init`, "like [Product]" |
 | **UI Specifier** | Screen specs, component definitions | `/ui:design-screens`, `/ui:define-components` |
-| **UI Prompter** | Export generation, prompt optimization | `/ui:export` |
+| **UI Prompter** | Export generation, prompt optimization | `/ui:export` (non-Pencil) |
 | **UI Brander** | Logo design, favicon specs, AI prompts | `/ui:logo` |
 | **UI Scanner** | Codebase reverse-engineering, token extraction | `/ui:scan`, `/ui:reverse-engineer` |
+| **UI Pencil Screen** | Single-screen Pencil MCP operations | `/ui:pencil sync`, `/ui:export pencil` (per screen) |
+
+### Pencil MCP Orchestrator Pattern
+
+When pushing/pulling/exporting 2+ screens to Pencil, the coordinator acts as an **orchestrator** that spawns one parallel subagent per screen. This prevents the context window from being exhausted by per-screen MCP operations:
+
+```
+Orchestrator (setup once)  →  Parallel Screen Agents  →  Collect Results
+  • Open .pen file              • SCR-01: own context       • Gather node IDs
+  • Set variables               • SCR-02: own context       • Update state
+  • Get components              • SCR-03: own context       • Report summary
+```
 
 ### Service Adapters
 
@@ -358,7 +370,7 @@ W3C-format tokens with dark mode support:
 | [Google Stitch](https://stitch.withgoogle.com/) | Visual prompts | Full-page layouts, Figma export | Quick mockups, exploration |
 | [V0 by Vercel](https://v0.dev/) | Code prompts | Production React + shadcn/ui | React/Next.js implementation |
 | [Figma](https://figma.com/) | Variables + specs | Collaboration, prototyping | Design team workflows |
-| Pencil MCP | **Direct execution** | Interactive, screenshots, bidirectional | Rapid prototyping, iteration |
+| Pencil MCP | **Direct execution** | Interactive, screenshots, parallel agents | Rapid prototyping, iteration |
 | Generic | Universal prompts | Tool-agnostic | Unknown tools, documentation |
 
 ## Philosophy
@@ -543,7 +555,8 @@ ui-design-cc/
 │   ├── ui-specifier.md       # Specification agent
 │   ├── ui-prompter.md        # Export agent
 │   ├── ui-brander.md         # Branding agent
-│   └── ui-scanner.md         # Code analysis agent
+│   ├── ui-scanner.md         # Code analysis agent
+│   └── ui-pencil-screen.md   # Per-screen Pencil MCP agent
 └── ui-design/
     ├── adapters/
     │   ├── README.md         # Adapter comparison
@@ -569,6 +582,15 @@ ui-design-cc/
 ```
 
 ## Version History
+
+### 0.5.0 — Orchestrator Pattern for Pencil MCP
+
+- **Orchestrator + subagent architecture** for multi-screen Pencil operations
+- **`ui-pencil-screen` agent** — Handles all MCP operations for a single screen in its own context window
+- **Parallel execution** — All screen agents run simultaneously for maximum throughput
+- **Context window protection** — Orchestrator stays lean; no more context exhaustion after 1-2 screens
+- Applies to: `/ui:pencil sync --push`, `--pull`, `/ui:export pencil`, `/ui:pencil validate all`
+- Single-screen operations still handled directly (no overhead)
 
 ### 0.4.1 — Pencil Hidden Directory Fix
 
